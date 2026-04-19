@@ -40,13 +40,24 @@ const bookCatalog = [
   { id: "dealing-with-dragons", title: "Dealing with Dragons", author: "Patricia C. Wrede" }
 ];
 
-function makeBookQuestions({ bookId, answer, author, sources, evidenceLevel = "high", questions }) {
+function makeBookQuestions({
+  bookId,
+  answer,
+  author,
+  sources,
+  evidenceLevel = "high",
+  answerType = "book",
+  questionKind = "story-book",
+  questions
+}) {
   return questions.map(([question, explanation, customEvidenceLevel, customSources], index) => ({
     id: `${bookId}-${index + 1}`,
     bookId,
     question,
     answer,
     author,
+    answerType,
+    questionKind,
     explanation,
     evidenceLevel: customEvidenceLevel || evidenceLevel,
     sources: customSources || sources
@@ -865,6 +876,7 @@ function makeCatalogMatchQuestions() {
         answer: book.author,
         author: book.author,
         answerType: "author",
+        questionKind: "author-from-title",
         explanation: `${book.title} is paired with ${book.author} on the Standard 28 list.`,
         evidenceLevel,
         sources
@@ -876,6 +888,7 @@ function makeCatalogMatchQuestions() {
         answer: book.title,
         author: book.author,
         answerType: "book",
+        questionKind: "book-from-author",
         explanation: `${book.author} wrote ${book.title}, which appears on the Standard 28 list.`,
         evidenceLevel,
         sources
@@ -884,7 +897,26 @@ function makeCatalogMatchQuestions() {
   });
 }
 
-const questionBank = [...storyQuestionBank, ...makeCatalogMatchQuestions()];
+function makeContentMatchQuestions() {
+  return storyQuestionBank.map((question) => ({
+    id: `${question.id}-detail-match`,
+    bookId: question.bookId,
+    question: `Which detail belongs in ${question.answer}?`,
+    answer: question.explanation,
+    author: question.author,
+    answerType: "detail",
+    questionKind: "detail-from-book",
+    explanation: `${question.explanation} This detail belongs in ${question.answer} by ${question.author}.`,
+    evidenceLevel: question.evidenceLevel,
+    sources: question.sources
+  }));
+}
+
+const questionBank = [
+  ...storyQuestionBank,
+  ...makeCatalogMatchQuestions(),
+  ...makeContentMatchQuestions()
+];
 
 if (typeof window !== "undefined") {
   window.bookCatalog = bookCatalog;

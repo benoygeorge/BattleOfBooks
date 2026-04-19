@@ -571,9 +571,16 @@
           return question?.answerType || "book";
         }
 
+        function getQuestionKind(question) {
+          return question?.questionKind || "story-book";
+        }
+
         function getQuestionContextText(question) {
           const book = bookMap.get(question.bookId);
           if (!book) return "";
+          if (getQuestionAnswerType(question) === "detail") {
+            return `from ${book.title} by ${book.author}`;
+          }
           if (getQuestionAnswerType(question) === "author") {
             return `Author of ${book.title}`;
           }
@@ -598,8 +605,7 @@
 
         function startQuiz() {
           const requested = getRequestedQuestionCount();
-          const available = shuffle([...getAvailableQuestions()]);
-          const chosenQuestions = available.slice(0, requested).map((question) => ({
+          const chosenQuestions = pickQuizQuestions(getAvailableQuestions(), requested).map((question) => ({
             ...question,
             options: buildAnswerOptions(question),
           }));
@@ -615,31 +621,110 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
+        function pickQuizQuestions(availableQuestions, requested) {
+          if (requested <= 0) return [];
+
+          const preferredKinds = [
+            "detail-from-book",
+            "author-from-title",
+            "story-book",
+            "book-from-author",
+          ];
+          const grouped = new Map();
+          availableQuestions.forEach((question) => {
+            const key = getQuestionKind(question);
+            if (!grouped.has(key)) grouped.set(key, []);
+            grouped.get(key).push(question);
+          });
+
+          const orderedGroups = Array.from(grouped.entries())
+            .sort((a, b) => {
+              const aIndex = preferredKinds.indexOf(a[0]);
+              const bIndex = preferredKinds.indexOf(b[0]);
+              const safeA = aIndex === -1 ? preferredKinds.length : aIndex;
+              const safeB = bIndex === -1 ? preferredKinds.length : bIndex;
+              return safeA - safeB;
+            })
+            .map(([key, questions]) => ({
+              key,
+              questions: shuffle(questions),
+            }));
+
+          const picked = [];
+          const usedIds = new Set();
+
+          while (picked.length < requested) {
+            let addedThisRound = false;
+
+            for (const group of orderedGroups) {
+              if (!group.questions.length || picked.length >= requested) continue;
+              const nextQuestion = group.questions.pop();
+              if (!nextQuestion || usedIds.has(nextQuestion.id)) continue;
+              picked.push(nextQuestion);
+              usedIds.add(nextQuestion.id);
+              addedThisRound = true;
+            }
+
+            if (!addedThisRound) break;
+          }
+
+          if (picked.length < requested) {
+            shuffle(availableQuestions).forEach((question) => {
+              if (picked.length >= requested || usedIds.has(question.id)) return;
+              picked.push(question);
+              usedIds.add(question.id);
+            });
+          }
+
+          return shuffle(picked);
+        }
+
         function buildAnswerOptions(question) {
           const answerType = getQuestionAnswerType(question);
-          const selectedPoolSource =
-            answerType === "author"
-              ? getSelectedBooks().map((book) => book.author)
-              : getSelectedBooks().map((book) => book.title);
-          const allPoolSource =
-            answerType === "author"
-              ? bookCatalog.map((book) => book.author)
-              : bookCatalog.map((book) => book.title);
-          const selectedPool = Array.from(new Set(selectedPoolSource)).filter(
-            (choice) => choice !== question.answer
-          );
-          const allPool = Array.from(new Set(allPoolSource)).filter(
-            (choice) => choice !== question.answer
-          );
+          let selectedPool = [];
+          let allPool = [];
+
+          if (answerType === "author") {
+            selectedPool = Array.from(new Set(getSelectedBooks().map((book) => book.author))).filter(
+              (choice) => choice !== question.answer
+            );
+            allPool = Array.from(new Set(bookCatalog.map((book) => book.author))).filter(
+              (choice) => choice !== question.answer
+            );
+          } else if (answerType === "detail") {
+            selectedPool = getAvailableQuestions()
+              .filter(
+                (candidate) =>
+                  getQuestionKind(candidate) === "detail-from-book" &&
+                  candidate.bookId !== question.bookId &&
+                  candidate.answer !== question.answer
+              )
+              .map((candidate) => candidate.answer);
+            allPool = questionBank
+              .filter(
+                (candidate) =>
+                  getQuestionKind(candidate) === "detail-from-book" &&
+                  candidate.bookId !== question.bookId &&
+                  candidate.answer !== question.answer
+              )
+              .map((candidate) => candidate.answer);
+          } else {
+            selectedPool = Array.from(new Set(getSelectedBooks().map((book) => book.title))).filter(
+              (choice) => choice !== question.answer
+            );
+            allPool = Array.from(new Set(bookCatalog.map((book) => book.title))).filter(
+              (choice) => choice !== question.answer
+            );
+          }
 
           const distractorSet = new Set();
-          shuffle(selectedPool).forEach((title) => {
-            if (distractorSet.size < 3) distractorSet.add(title);
+          shuffle(selectedPool).forEach((choice) => {
+            if (distractorSet.size < 3) distractorSet.add(choice);
           });
 
           if (distractorSet.size < 3) {
-            shuffle(allPool).forEach((title) => {
-              if (distractorSet.size < 3) distractorSet.add(title);
+            shuffle(allPool).forEach((choice) => {
+              if (distractorSet.size < 3) distractorSet.add(choice);
             });
           }
 
@@ -1279,6 +1364,8 @@
           const isCorrect = option === correctAnswer;
           const revealCorrect = state.submitted && isCorrect;
           const revealWrong = state.submitted && isSelected && !isCorrect;
+          const currentQuestion = getCurrentQuestion();
+          const isDetailAnswer = getQuestionAnswerType(currentQuestion) === "detail";
 
           let cardClass = "option-button";
           let badge = "";
@@ -1313,7 +1400,7 @@
                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-sm font-black text-slate-700">
                   ${String.fromCharCode(65 + index)}
                 </span>
-                <span>${escapeHtml(option)}</span>
+                <span class="${isDetailAnswer ? "text-sm leading-6 sm:text-base" : ""}">${escapeHtml(option)}</span>
               </span>
               ${badge}
             </button>
