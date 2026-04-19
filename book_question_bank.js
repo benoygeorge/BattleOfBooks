@@ -53,7 +53,7 @@ function makeBookQuestions({ bookId, answer, author, sources, evidenceLevel = "h
   }));
 }
 
-const questionBank = [
+const storyQuestionBank = [
   ...makeBookQuestions({
     bookId: "the-very-very-far-north",
     answer: "The Very, Very Far North",
@@ -846,6 +846,45 @@ const questionBank = [
     ]
   })
 ];
+
+function getBookReferenceQuestion(bookId) {
+  return storyQuestionBank.find((question) => question.bookId === bookId) || null;
+}
+
+function makeCatalogMatchQuestions() {
+  return bookCatalog.flatMap((book) => {
+    const referenceQuestion = getBookReferenceQuestion(book.id);
+    const sources = referenceQuestion?.sources || [];
+    const evidenceLevel = referenceQuestion?.evidenceLevel || "medium";
+
+    return [
+      {
+        id: `${book.id}-author-match`,
+        bookId: book.id,
+        question: `Which author wrote ${book.title}?`,
+        answer: book.author,
+        author: book.author,
+        answerType: "author",
+        explanation: `${book.title} is paired with ${book.author} on the Standard 28 list.`,
+        evidenceLevel,
+        sources
+      },
+      {
+        id: `${book.id}-title-match`,
+        bookId: book.id,
+        question: `Which book on the Standard 28 list was written by ${book.author}?`,
+        answer: book.title,
+        author: book.author,
+        answerType: "book",
+        explanation: `${book.author} wrote ${book.title}, which appears on the Standard 28 list.`,
+        evidenceLevel,
+        sources
+      }
+    ];
+  });
+}
+
+const questionBank = [...storyQuestionBank, ...makeCatalogMatchQuestions()];
 
 if (typeof window !== "undefined") {
   window.bookCatalog = bookCatalog;

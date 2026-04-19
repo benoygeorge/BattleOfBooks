@@ -567,6 +567,19 @@
           );
         }
 
+        function getQuestionAnswerType(question) {
+          return question?.answerType || "book";
+        }
+
+        function getQuestionContextText(question) {
+          const book = bookMap.get(question.bookId);
+          if (!book) return "";
+          if (getQuestionAnswerType(question) === "author") {
+            return `Author of ${book.title}`;
+          }
+          return `by ${book.author}`;
+        }
+
         function parseCountInput(value) {
           return Number.parseInt(value || "", 10) || 0;
         }
@@ -603,11 +616,21 @@
         }
 
         function buildAnswerOptions(question) {
-          const selectedTitles = getSelectedBooks().map((book) => book.title);
-          const selectedPool = selectedTitles.filter((title) => title !== question.answer);
-          const allPool = bookCatalog
-            .map((book) => book.title)
-            .filter((title) => title !== question.answer);
+          const answerType = getQuestionAnswerType(question);
+          const selectedPoolSource =
+            answerType === "author"
+              ? getSelectedBooks().map((book) => book.author)
+              : getSelectedBooks().map((book) => book.title);
+          const allPoolSource =
+            answerType === "author"
+              ? bookCatalog.map((book) => book.author)
+              : bookCatalog.map((book) => book.title);
+          const selectedPool = Array.from(new Set(selectedPoolSource)).filter(
+            (choice) => choice !== question.answer
+          );
+          const allPool = Array.from(new Set(allPoolSource)).filter(
+            (choice) => choice !== question.answer
+          );
 
           const distractorSet = new Set();
           shuffle(selectedPool).forEach((title) => {
@@ -640,6 +663,7 @@
             question: question.question,
             answer: question.answer,
             author: question.author,
+            answerType: getQuestionAnswerType(question),
             explanation: question.explanation,
             sources: question.sources,
             selectedAnswer: state.selectedAnswer,
@@ -1225,7 +1249,7 @@
                             ${escapeHtml(question.answer)}
                           </p>
                           <p class="mt-1 text-sm font-bold text-slate-600">
-                            by ${escapeHtml(question.author)}
+                            ${escapeHtml(getQuestionContextText(question))}
                           </p>
                         </div>
                         <div class="rounded-3xl bg-white/90 px-4 py-3 text-sm font-bold text-slate-700 shadow-sm">
@@ -1397,11 +1421,9 @@
                               </p>
                               <p class="mt-1 text-sm font-semibold text-slate-600">
                                 Correct answer: <span class="font-black text-ink">${escapeHtml(result.answer)}</span>
-                                ${
-                                  book
-                                    ? `<span class="text-slate-500"> • ${escapeHtml(book.author)}</span>`
-                                    : ""
-                                }
+                                ${getQuestionContextText(result)
+                                  ? `<span class="text-slate-500"> • ${escapeHtml(getQuestionContextText(result))}</span>`
+                                  : ""}
                               </p>
                             </div>
                             <div class="text-3xl">${book ? getBookIcon(book.id) : "📚"}</div>
