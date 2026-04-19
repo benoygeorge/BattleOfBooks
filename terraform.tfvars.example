@@ -1,0 +1,6 @@
+aws_region   = "us-east-1"
+aws_profile  = "default"
+bucket_name  = "battleofbooks-georgeb4-2026"
+project_name = "battle-of-books"
+custom_domain     = "battleofbooks.benoy.net"
+route53_zone_name = "benoy.net"

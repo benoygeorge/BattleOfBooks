@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Battle of the Books Practice Quiz for Shiloh Point Elementary School, Standard 28 Book List for Grades 4-6."
+    />
+    <meta name="theme-color" content="#1d4ed8" />
+    <title>Battle of the Books Practice Quiz</title>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              lagoon: "#1d4ed8",
+              seafoam: "#14b8a6",
+              sunshine: "#facc15",
+              coral: "#fb7185",
+              mint: "#86efac",
+              ink: "#15304f",
+              paper: "#fffdf6",
+            },
+            boxShadow: {
+              floaty: "0 20px 50px rgba(21, 48, 79, 0.14)",
+              sticker: "0 12px 24px rgba(29, 78, 216, 0.16)",
+            },
+            borderRadius: {
+              "4xl": "2rem",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --paper: #fffdf6;
+        --ink: #15304f;
+        --sky: #dbeafe;
+        --lagoon: #1d4ed8;
+        --seafoam: #14b8a6;
+        --sunshine: #facc15;
+        --coral: #fb7185;
+        --mint: #86efac;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Trebuchet MS", "Avenir Next", "Gill Sans", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(134, 239, 172, 0.55), transparent 24rem),
+          radial-gradient(circle at top right, rgba(250, 204, 21, 0.5), transparent 22rem),
+          radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.28), transparent 20rem),
+          linear-gradient(180deg, #f8fbff 0%, #eef8ff 42%, #fffdf6 100%);
+      }
+
+      button,
+      input,
+      label,
+      summary,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      a:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #1d4ed8;
+        outline-offset: 3px;
+      }
+
+      .title-font {
+        font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+        letter-spacing: 0.02em;
+      }
+
+      .bubble-card {
+        background: rgba(255, 253, 246, 0.94);
+        backdrop-filter: blur(8px);
+        border: 2px solid rgba(255, 255, 255, 0.9);
+      }
+
+      .hero-cta {
+        background-color: var(--lagoon);
+        background: linear-gradient(90deg, #1d4ed8 0%, #14b8a6 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(29, 78, 216, 0.18);
+      }
+
+      .primary-button {
+        background-color: var(--lagoon);
+        background: linear-gradient(90deg, var(--lagoon) 0%, var(--seafoam) 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(29, 78, 216, 0.18);
+      }
+
+      .primary-button:hover:not(:disabled) {
+        transform: translateY(-3px);
+      }
+
+      .primary-button:disabled {
+        background: #e2e8f0;
+        color: #64748b;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+
+      .secondary-button {
+        background: #ffffff;
+        border: 2px solid rgba(148, 163, 184, 0.34);
+        color: #334155;
+      }
+
+      .secondary-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        border-color: rgba(100, 116, 139, 0.48);
+      }
+
+      .secondary-accent-button {
+        background: #ffffff;
+        border: 2px solid rgba(29, 78, 216, 0.18);
+        color: var(--lagoon);
+      }
+
+      .secondary-accent-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        border-color: rgba(29, 78, 216, 0.38);
+        background: rgba(219, 234, 254, 0.32);
+      }
+
+      .book-toggle-card {
+        border: 2px solid rgba(226, 232, 240, 0.95);
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+      }
+
+      .book-toggle-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(29, 78, 216, 0.32);
+      }
+
+      .book-toggle-card-active {
+        background-color: #dbeafe;
+        background-image: linear-gradient(135deg, #dbeafe 0%, #ccfbf1 100%);
+        border-color: rgba(29, 78, 216, 0.55);
+        color: var(--ink);
+        box-shadow: 0 12px 24px rgba(29, 78, 216, 0.12);
+      }
+
+      .book-toggle-card-active:hover {
+        border-color: rgba(29, 78, 216, 0.68);
+      }
+
+      .book-toggle-author-active {
+        color: #1e3a5f;
+      }
+
+      .book-toggle-on {
+        background: var(--lagoon);
+        color: #ffffff;
+      }
+
+      .count-choice {
+        border: 2px solid rgba(29, 78, 216, 0.18);
+        background: #ffffff;
+        color: var(--lagoon);
+      }
+
+      .count-choice:hover {
+        transform: translateY(-2px);
+        border-color: rgba(29, 78, 216, 0.36);
+      }
+
+      .count-choice-active {
+        background-color: var(--lagoon);
+        background-image: linear-gradient(90deg, var(--lagoon) 0%, var(--seafoam) 100%);
+        border-color: transparent;
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(29, 78, 216, 0.16);
+      }
+
+      .option-button {
+        border: 2px solid #e2e8f0;
+        background: #ffffff;
+        color: var(--ink);
+      }
+
+      .option-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        border-color: rgba(29, 78, 216, 0.32);
+      }
+
+      .option-button-selected {
+        border-color: var(--lagoon);
+        background: #eff6ff;
+      }
+
+      .option-button-correct {
+        border-color: #34d399;
+        background: #ecfdf5;
+      }
+
+      .option-button-wrong {
+        border-color: #fb7185;
+        background: #fff1f2;
+      }
+
+      .sticker {
+        box-shadow: 0 14px 26px rgba(29, 78, 216, 0.15);
+        transform: rotate(-2deg);
+      }
+
+      .wiggle {
+        animation: wiggle 4.8s ease-in-out infinite;
+      }
+
+      .floaty {
+        animation: floaty 5s ease-in-out infinite;
+      }
+
+      .pop-in {
+        animation: popin 0.28s ease-out both;
+      }
+
+      .confetti-piece {
+        position: fixed;
+        top: -12px;
+        width: 12px;
+        height: 18px;
+        border-radius: 999px;
+        opacity: 0.95;
+        animation: confetti-fall 950ms linear forwards;
+        z-index: 60;
+      }
+
+      .question-scroll::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .question-scroll::-webkit-scrollbar-thumb {
+        background: rgba(29, 78, 216, 0.22);
+        border-radius: 999px;
+      }
+
+      @keyframes wiggle {
+        0%,
+        100% {
+          transform: rotate(-2deg) translateY(0px);
+        }
+        50% {
+          transform: rotate(1deg) translateY(-4px);
+        }
+      }
+
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @keyframes popin {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(0) rotate(0deg);
+        }
+        100% {
+          transform: translateY(110vh) rotate(520deg);
+          opacity: 0.1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none fixed inset-0 overflow-hidden"
+    >
+      <div class="absolute left-[-4rem] top-12 h-28 w-28 rounded-full bg-mint/40 blur-2xl"></div>
+      <div class="absolute right-[-2rem] top-24 h-36 w-36 rounded-full bg-sunshine/30 blur-2xl"></div>
+      <div class="absolute bottom-[-4rem] left-1/3 h-40 w-40 rounded-full bg-seafoam/20 blur-3xl"></div>
+    </div>
+
+    <div id="confetti-root" aria-hidden="true"></div>
+    <div id="app" class="relative z-10"></div>
+
+    <script src="./book_question_bank.js"></script>
+    <script>
+      (() => {
+        const STORAGE_KEYS = {
+          selectedBooks: "botb_selected_books_v3",
+          questionCount: "botb_question_count_v3",
+        };
+
+        const ALL_BOOK_IDS = bookCatalog.map((book) => book.id);
+        const DEFAULT_BOOKS = [];
+        const BOOK_ICON_MAP = {
+          "the-very-very-far-north": "🐻‍❄️",
+          "the-terrible-two": "🐄",
+          "whoosh-lonnie-johnsons-super-soaking-stream-of-inventions": "💦",
+          "el-deafo": "🦻",
+          "book-scavenger": "🔎",
+          "seven-wonders-of-sassafras-springs": "✨",
+          "gregor-the-overlander": "🦇",
+          "the-way-to-rio-luna": "🌙",
+          "ruby-holler": "🏕️",
+          "bud-not-buddy": "🎷",
+          "dragons-in-a-bag": "🐉",
+          "dog-squad": "🐶",
+          "the-million-dollar-shot": "🏀",
+          found: "🛩️",
+          "the-detectives-assistant": "🕵️",
+          "full-of-beans": "🫘",
+          "regarding-the-fountain": "⛲",
+          restart: "🔁",
+          "pie-in-the-sky": "🥧",
+          savvy: "⚡",
+          "where-the-mountain-meets-the-moon": "🐲",
+          glitch: "🤖",
+          "snow-treasure": "❄️",
+          "becoming-muhammad-ali": "🥊",
+          "the-camping-trip-that-changed-america": "🏕️",
+          "harry-potter-and-the-sorcerers-stone": "🪄",
+          "night-of-the-twisters": "🌪️",
+          "dealing-with-dragons": "🐲",
+        };
+
+        const app = document.getElementById("app");
+        const confettiRoot = document.getElementById("confetti-root");
+        const bookMap = new Map(bookCatalog.map((book) => [book.id, book]));
+
+        const state = {
+          view: "home",
+          selectedBookIds: loadSelectedBooks(),
+          questionCountInput: loadQuestionCount(),
+          quizQuestions: [],
+          currentQuestionIndex: 0,
+          selectedAnswer: "",
+          submitted: false,
+          correctCount: 0,
+          quizResults: [],
+        };
+
+        normalizePreferences();
+
+        app.addEventListener("click", handleClick);
+        app.addEventListener("change", handleChange);
+        app.addEventListener("input", handleInput);
+
+        render();
+
+        function loadSelectedBooks() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.selectedBooks);
+            const parsed = raw ? JSON.parse(raw) : null;
+            if (!Array.isArray(parsed)) return [...DEFAULT_BOOKS];
+            const valid = parsed.filter((id) => bookMap.has(id));
+            return valid.length ? valid : [...DEFAULT_BOOKS];
+          } catch (error) {
+            return [...DEFAULT_BOOKS];
+          }
+        }
+
+        function loadQuestionCount() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.questionCount);
+            return raw && /^\d+$/.test(raw) ? raw : "10";
+          } catch (error) {
+            return "10";
+          }
+        }
+
+        function persistPreferences() {
+          try {
+            localStorage.setItem(
+              STORAGE_KEYS.selectedBooks,
+              JSON.stringify(state.selectedBookIds)
+            );
+            if (state.questionCountInput) {
+              localStorage.setItem(
+                STORAGE_KEYS.questionCount,
+                state.questionCountInput
+              );
+            }
+          } catch (error) {
+            // Ignore localStorage issues in locked-down browsers.
+          }
+        }
+
+        function normalizePreferences() {
+          const maxQuestions = getAvailableQuestions().length;
+          const requested = parseCountInput(state.questionCountInput);
+          if (!requested && maxQuestions > 0) {
+            state.questionCountInput = maxQuestions >= 10 ? "10" : String(maxQuestions);
+          }
+          if (requested > maxQuestions && maxQuestions > 0) {
+            state.questionCountInput = String(maxQuestions);
+          }
+          if (maxQuestions === 0) {
+            state.questionCountInput = "";
+          }
+          persistPreferences();
+        }
+
+        function handleClick(event) {
+          const trigger = event.target.closest("[data-action]");
+          if (!trigger) return;
+
+          const action = trigger.dataset.action;
+
+          if (action === "go-home") {
+            setView("home");
+            return;
+          }
+
+          if (action === "go-setup") {
+            setView("setup");
+            return;
+          }
+
+          if (action === "start-from-home") {
+            setView("setup");
+            return;
+          }
+
+          if (action === "toggle-book") {
+            toggleBook(trigger.dataset.bookId);
+            return;
+          }
+
+          if (action === "select-all-books") {
+            state.selectedBookIds = [...ALL_BOOK_IDS];
+            normalizePreferences();
+            persistPreferences();
+            render();
+            return;
+          }
+
+          if (action === "clear-all-books") {
+            state.selectedBookIds = [];
+            normalizePreferences();
+            persistPreferences();
+            render();
+            return;
+          }
+
+          if (action === "set-count") {
+            state.questionCountInput = trigger.dataset.count || "";
+            persistPreferences();
+            render();
+            return;
+          }
+
+          if (action === "begin-quiz") {
+            if (!canBeginQuiz()) return;
+            startQuiz();
+            return;
+          }
+
+          if (action === "submit-answer") {
+            submitCurrentAnswer();
+            return;
+          }
+
+          if (action === "select-answer") {
+            if (state.submitted) return;
+            state.selectedAnswer = trigger.dataset.answer || "";
+            render();
+            return;
+          }
+
+          if (action === "next-question") {
+            goToNextQuestion();
+            return;
+          }
+
+          if (action === "see-results") {
+            setView("results");
+            return;
+          }
+
+          if (action === "restart-quiz") {
+            startQuiz();
+            return;
+          }
+
+          if (action === "review-selected-books") {
+            setView(state.selectedBookIds.length ? "review" : "setup");
+            return;
+          }
+        }
+
+        function handleChange(event) {
+          const answerInput = event.target.closest('input[name="answer-choice"]');
+          if (answerInput && !state.submitted) {
+            state.selectedAnswer = answerInput.value;
+            render();
+          }
+        }
+
+        function handleInput(event) {
+          const countInput = event.target.closest('[data-role="question-count-input"]');
+          if (!countInput) return;
+          const maxDigits = String(Math.max(questionBank.length, 1)).length;
+          const digitsOnly = countInput.value.replace(/[^\d]/g, "").slice(0, maxDigits);
+          state.questionCountInput = digitsOnly;
+          const maxQuestions = getAvailableQuestions().length;
+          const requested = parseCountInput(digitsOnly);
+          if (requested > maxQuestions && maxQuestions > 0) {
+            state.questionCountInput = String(maxQuestions);
+          }
+          persistPreferences();
+          render();
+        }
+
+        function setView(view) {
+          state.view = view;
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function toggleBook(bookId) {
+          if (!bookMap.has(bookId)) return;
+          if (state.selectedBookIds.includes(bookId)) {
+            state.selectedBookIds = state.selectedBookIds.filter((id) => id !== bookId);
+          } else {
+            state.selectedBookIds = [...state.selectedBookIds, bookId];
+          }
+          normalizePreferences();
+          persistPreferences();
+          render();
+        }
+
+        function getSelectedBooks() {
+          return bookCatalog.filter((book) => state.selectedBookIds.includes(book.id));
+        }
+
+        function getAvailableQuestions() {
+          return questionBank.filter((question) =>
+            state.selectedBookIds.includes(question.bookId)
+          );
+        }
+
+        function parseCountInput(value) {
+          return Number.parseInt(value || "", 10) || 0;
+        }
+
+        function getRequestedQuestionCount() {
+          const max = getAvailableQuestions().length;
+          const requested = parseCountInput(state.questionCountInput);
+          return requested > 0 ? Math.min(requested, max) : 0;
+        }
+
+        function canBeginQuiz() {
+          const max = getAvailableQuestions().length;
+          const requested = parseCountInput(state.questionCountInput);
+          return state.selectedBookIds.length > 0 && requested >= 1 && requested <= max;
+        }
+
+        function startQuiz() {
+          const requested = getRequestedQuestionCount();
+          const available = shuffle([...getAvailableQuestions()]);
+          const chosenQuestions = available.slice(0, requested).map((question) => ({
+            ...question,
+            options: buildAnswerOptions(question),
+          }));
+
+          state.quizQuestions = chosenQuestions;
+          state.currentQuestionIndex = 0;
+          state.selectedAnswer = "";
+          state.submitted = false;
+          state.correctCount = 0;
+          state.quizResults = [];
+          state.view = "quiz";
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function buildAnswerOptions(question) {
+          const selectedTitles = getSelectedBooks().map((book) => book.title);
+          const selectedPool = selectedTitles.filter((title) => title !== question.answer);
+          const allPool = bookCatalog
+            .map((book) => book.title)
+            .filter((title) => title !== question.answer);
+
+          const distractorSet = new Set();
+          shuffle(selectedPool).forEach((title) => {
+            if (distractorSet.size < 3) distractorSet.add(title);
+          });
+
+          if (distractorSet.size < 3) {
+            shuffle(allPool).forEach((title) => {
+              if (distractorSet.size < 3) distractorSet.add(title);
+            });
+          }
+
+          return shuffle([question.answer, ...Array.from(distractorSet).slice(0, 3)]);
+        }
+
+        function submitCurrentAnswer() {
+          if (state.submitted || !state.selectedAnswer) return;
+          const question = getCurrentQuestion();
+          if (!question) return;
+
+          const isCorrect = state.selectedAnswer === question.answer;
+          if (isCorrect) {
+            state.correctCount += 1;
+            fireConfetti();
+          }
+
+          state.quizResults[state.currentQuestionIndex] = {
+            questionId: question.id,
+            bookId: question.bookId,
+            question: question.question,
+            answer: question.answer,
+            author: question.author,
+            explanation: question.explanation,
+            sources: question.sources,
+            selectedAnswer: state.selectedAnswer,
+            isCorrect,
+          };
+
+          state.submitted = true;
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function goToNextQuestion() {
+          if (!state.submitted) return;
+          if (state.currentQuestionIndex >= state.quizQuestions.length - 1) {
+            setView("results");
+            return;
+          }
+          state.currentQuestionIndex += 1;
+          state.selectedAnswer = "";
+          state.submitted = false;
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function getCurrentQuestion() {
+          return state.quizQuestions[state.currentQuestionIndex] || null;
+        }
+
+        function shuffle(items) {
+          const array = [...items];
+          for (let i = array.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        }
+
+        function fireConfetti() {
+          const colors = ["#1d4ed8", "#14b8a6", "#facc15", "#fb7185", "#86efac"];
+          const pieces = 24;
+
+          for (let index = 0; index < pieces; index += 1) {
+            const piece = document.createElement("span");
+            piece.className = "confetti-piece";
+            piece.style.left = `${Math.random() * 100}%`;
+            piece.style.background = colors[index % colors.length];
+            piece.style.animationDelay = `${Math.random() * 160}ms`;
+            piece.style.transform = `translateY(0) rotate(${Math.random() * 90}deg)`;
+            confettiRoot.appendChild(piece);
+            window.setTimeout(() => piece.remove(), 1200);
+          }
+        }
+
+        function render() {
+          app.innerHTML = `
+            <div class="px-4 pb-12 pt-4 sm:px-6 lg:px-8">
+              ${renderHeader()}
+              <main class="mx-auto mt-6 max-w-6xl pop-in">
+                ${renderCurrentView()}
+              </main>
+            </div>
+          `;
+        }
+
+        function renderHeader() {
+          const showNav = state.view !== "home";
+
+          return `
+            <header class="mx-auto max-w-6xl bubble-card overflow-hidden rounded-[2rem] border border-white/80 shadow-floaty">
+              <div class="flex flex-col gap-4 bg-white/75 px-5 py-5 sm:px-7 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex min-w-0 items-start gap-4">
+                  <div class="sticker floaty flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-lagoon to-seafoam text-3xl shadow-sticker">
+                    📚
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-black uppercase tracking-[0.28em] text-lagoon">
+                      Shiloh Point Elementary
+                    </p>
+                    <h1 class="title-font mt-1 text-2xl font-black leading-tight text-ink sm:text-3xl">
+                      Battle of the Books Practice Quiz
+                    </h1>
+                    <p class="mt-1 text-sm font-semibold text-slate-600 sm:text-base">
+                      Standard 28 Book List • Grades 4–6 • 2025–26
+                    </p>
+                  </div>
+                </div>
+                ${
+                  showNav
+                    ? `
+                  <div class="flex flex-wrap items-center gap-3">
+                    <button
+                      data-action="go-home"
+                      class="min-h-[48px] rounded-full border-2 border-lagoon/20 bg-white px-4 py-2 text-sm font-black text-lagoon transition hover:-translate-y-0.5 hover:border-lagoon/40 hover:bg-lagoon/5"
+                    >
+                      Home
+                    </button>
+                    <button
+                      data-action="go-setup"
+                      class="primary-button min-h-[48px] rounded-full px-5 py-2 text-sm font-black transition"
+                    >
+                      New Setup
+                    </button>
+                  </div>
+                `
+                    : `
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="wiggle inline-flex items-center rounded-full bg-sunshine/30 px-4 py-2 text-sm font-black text-amber-900">
+                      🏆 Quiz time
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-mint/40 px-4 py-2 text-sm font-black text-emerald-900">
+                      📱 iPad + phone friendly
+                    </span>
+                  </div>
+                `
+                }
+              </div>
+            </header>
+          `;
+        }
+
+        function renderCurrentView() {
+          if (state.view === "setup") return renderSetup();
+          if (state.view === "quiz") return renderQuiz();
+          if (state.view === "results") return renderResults();
+          if (state.view === "review") return renderReview();
+          return renderHome();
+        }
+
+        function renderHome() {
+          return `
+            <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <div class="bubble-card overflow-hidden rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="inline-flex items-center rounded-full bg-lagoon/10 px-4 py-2 text-sm font-black text-lagoon">
+                  📘 Practice for grades 4–6
+                </div>
+                <h2 class="title-font mt-5 max-w-3xl text-4xl font-black leading-tight text-ink sm:text-5xl">
+                  Practice the books you choose, one question at a time.
+                </h2>
+                <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-700">
+                  Practice for your Battle of the Books quiz! First choose the books
+                  you want to study, then choose how many questions you want, answer
+                  them one at a time, and see the correct answer and citation right
+                  away.
+                </p>
+                <div class="mt-6 rounded-[1.8rem] border border-lagoon/10 bg-lagoon/5 p-4 sm:p-5">
+                  <p class="text-sm font-black uppercase tracking-[0.22em] text-lagoon">
+                    Start here
+                  </p>
+                  <p class="mt-2 text-base font-semibold text-slate-700">
+                    Tap the big button to choose your books and begin the quiz setup.
+                  </p>
+                  <button
+                    data-action="start-from-home"
+                    class="hero-cta mt-4 inline-flex min-h-[60px] items-center justify-center rounded-full px-8 py-4 text-lg font-black transition hover:-translate-y-1"
+                  >
+                    Start New Quiz
+                  </button>
+                </div>
+                <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div class="rounded-3xl bg-sky-100 px-4 py-4">
+                    <p class="text-2xl">📚</p>
+                    <p class="mt-2 text-sm font-black text-ink">Pick only the books you want</p>
+                  </div>
+                  <div class="rounded-3xl bg-emerald-100 px-4 py-4">
+                    <p class="text-2xl">✅</p>
+                    <p class="mt-2 text-sm font-black text-ink">See the answer after every turn</p>
+                  </div>
+                  <div class="rounded-3xl bg-amber-100 px-4 py-4">
+                    <p class="text-2xl">🌟</p>
+                    <p class="mt-2 text-sm font-black text-ink">Study again on an iPad or phone</p>
+                  </div>
+                </div>
+                ${
+                  state.selectedBookIds.length
+                    ? `
+                  <button
+                    data-action="review-selected-books"
+                    class="mt-3 inline-flex min-h-[44px] items-center rounded-full border border-lagoon/15 bg-white px-4 py-2 text-sm font-black text-lagoon transition hover:-translate-y-0.5 hover:border-lagoon/35"
+                  >
+                    Open saved study review cards
+                  </button>
+                `
+                    : ""
+                }
+                <p class="mt-4 text-sm font-semibold text-slate-600">
+                  Tip: students can practice all ${bookCatalog.length} books or only the ones they want
+                  to study today.
+                </p>
+              </div>
+
+              <div class="grid gap-5">
+                <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty">
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center rounded-full bg-coral/20 px-3 py-1 text-sm font-black text-rose-900">
+                      🐻 🤖 🐄
+                    </span>
+                    <span class="text-sm font-black text-slate-500">Fun facts</span>
+                  </div>
+                  <div class="mt-4 space-y-4">
+                    <div class="rounded-3xl bg-white px-4 py-4 shadow-sm">
+                      <p class="text-sm font-black uppercase tracking-wide text-slate-500">
+                        Books ready
+                      </p>
+                      <p class="mt-1 text-4xl font-black text-ink">${bookCatalog.length}</p>
+                    </div>
+                    <div class="rounded-3xl bg-white px-4 py-4 shadow-sm">
+                      <p class="text-sm font-black uppercase tracking-wide text-slate-500">
+                        Vetted questions
+                      </p>
+                      <p class="mt-1 text-4xl font-black text-ink">${questionBank.length}</p>
+                    </div>
+                    <div class="rounded-3xl bg-white px-4 py-4 shadow-sm">
+                      <p class="text-sm font-black uppercase tracking-wide text-slate-500">
+                        Best for
+                      </p>
+                      <p class="mt-1 text-lg font-black text-ink">
+                        School iPads and parents’ smartphones
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty">
+                  <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
+                    How it works
+                  </p>
+                  <ol class="mt-4 space-y-3">
+                    <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
+                      1. Choose your books
+                    </li>
+                    <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
+                      2. Pick your question count
+                    </li>
+                    <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
+                      3. Answer and learn right away
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        function renderSetup() {
+          const selectedBooks = getSelectedBooks();
+          const availableQuestions = getAvailableQuestions();
+          const maxQuestions = availableQuestions.length;
+          const requested = parseCountInput(state.questionCountInput);
+          const quickCounts = Array.from(
+            new Set([5, 10, 15, 20].filter((count) => count <= maxQuestions))
+          );
+
+          if (maxQuestions > 0 && !quickCounts.includes(maxQuestions)) {
+            quickCounts.push(maxQuestions);
+          }
+
+          quickCounts.sort((a, b) => a - b);
+
+          return `
+            <section class="space-y-6">
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
+                      Quiz setup
+                    </p>
+                    <h2 class="title-font mt-2 text-3xl font-black text-ink sm:text-4xl">
+                      Build a quiz that fits today’s practice.
+                    </h2>
+                    <p class="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+                      Start with the books you want, then choose how many questions
+                      feel just right.
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <span class="inline-flex items-center rounded-full bg-lagoon/10 px-4 py-2 text-sm font-black text-lagoon">
+                      Books selected: ${selectedBooks.length} of ${bookCatalog.length}
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-black text-emerald-900">
+                      Questions available: ${maxQuestions}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 class="text-2xl font-black text-ink">
+                      Which books would you like to be quizzed on?
+                    </h3>
+                    <p class="mt-2 text-base text-slate-700">
+                      Tap the books you want. Pick one, a few, or all ${bookCatalog.length}.
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      data-action="select-all-books"
+                      class="primary-button min-h-[48px] rounded-full px-5 py-2 text-sm font-black transition"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      data-action="clear-all-books"
+                      class="secondary-button min-h-[48px] rounded-full px-5 py-2 text-sm font-black transition"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  ${bookCatalog
+                    .map((book) => {
+                      const selected = state.selectedBookIds.includes(book.id);
+                      const icon = getBookIcon(book.id);
+                      return `
+                        <button
+                          type="button"
+                          data-action="toggle-book"
+                          data-book-id="${book.id}"
+                          aria-pressed="${selected}"
+                          class="book-toggle-card min-h-[96px] rounded-[1.6rem] px-5 py-4 text-left transition ${
+                            selected
+                              ? "book-toggle-card-active"
+                              : ""
+                          }"
+                        >
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">${icon}</span>
+                            <div class="min-w-0">
+                              <div class="flex items-center gap-2">
+                                <p class="text-base font-black leading-6">
+                                  ${escapeHtml(book.title)}
+                                </p>
+                                ${
+                                  selected
+                                    ? `<span class="book-toggle-on rounded-full px-2 py-1 text-xs font-black uppercase tracking-wide">On</span>`
+                                    : ""
+                                }
+                              </div>
+                              <p class="mt-1 text-sm font-semibold ${
+                                selected ? "book-toggle-author-active" : "text-slate-600"
+                              }">
+                                ${escapeHtml(book.author)}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <h3 class="text-2xl font-black text-ink">
+                  How many questions would you like to answer?
+                </h3>
+                <p class="mt-2 text-base text-slate-700">
+                  You can choose up to ${maxQuestions || 0} questions based on your selected books.
+                </p>
+
+                <div class="mt-5 flex flex-wrap gap-3">
+                  ${
+                    quickCounts.length
+                      ? quickCounts
+                          .map((count) => {
+                            const active = requested === count;
+                            const label =
+                              count === maxQuestions &&
+                              (count > 20 || ![5, 10, 15, 20].includes(count))
+                              ? `Max ${count}`
+                              : `${count}`;
+                            return `
+                              <button
+                                type="button"
+                                data-action="set-count"
+                                data-count="${count}"
+                                class="count-choice min-h-[56px] rounded-3xl px-5 py-3 text-lg font-black transition ${
+                                  active
+                                    ? "count-choice-active"
+                                    : ""
+                                }"
+                              >
+                                ${label}
+                              </button>
+                            `;
+                          })
+                          .join("")
+                      : `
+                        <div class="rounded-3xl bg-amber-100 px-4 py-3 text-sm font-black text-amber-900">
+                          Choose a number in the custom box below.
+                        </div>
+                      `
+                  }
+                </div>
+
+                <div class="mt-6 max-w-sm">
+                  <label for="questionCount" class="mb-2 block text-sm font-black uppercase tracking-wide text-slate-600">
+                    Custom amount
+                  </label>
+                  <input
+                    id="questionCount"
+                    type="number"
+                    inputmode="numeric"
+                    min="1"
+                    max="${maxQuestions || 1}"
+                    placeholder="${maxQuestions > 0 ? `1-${maxQuestions}` : "Pick books first"}"
+                    value="${escapeAttribute(state.questionCountInput)}"
+                    data-role="question-count-input"
+                    class="min-h-[58px] w-full rounded-3xl border-2 border-lagoon/20 bg-white px-5 text-xl font-black text-ink shadow-sm placeholder:text-slate-400"
+                  />
+                  <p class="mt-2 text-sm font-semibold text-slate-600">
+                    ${
+                      maxQuestions >= 5
+                        ? `Quick buttons work great. Use the custom box if you want a different number.`
+                        : maxQuestions > 0
+                        ? `Since you picked a smaller set of books, use 1 to ${maxQuestions} in the custom box.`
+                        : `Pick at least one book to unlock the quiz.`
+                    }
+                  </p>
+                </div>
+
+                ${
+                  state.selectedBookIds.length === 0
+                    ? `
+                  <div class="mt-6 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-black text-amber-900">
+                    Please choose at least one book before starting.
+                  </div>
+                `
+                    : ""
+                }
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    data-action="begin-quiz"
+                    ${canBeginQuiz() ? "" : "disabled"}
+                    class="primary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Begin Quiz
+                  </button>
+                  <button
+                    data-action="go-home"
+                    class="secondary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Back Home
+                  </button>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        function renderQuiz() {
+          const question = getCurrentQuestion();
+          if (!question) {
+            return `
+              <section class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <h2 class="text-2xl font-black text-ink">Your quiz is ready to start.</h2>
+                <p class="mt-2 text-base text-slate-700">Go back to setup and choose your books and question count.</p>
+                <button
+                  data-action="go-setup"
+                  class="primary-button mt-6 min-h-[56px] rounded-full px-6 py-3 text-lg font-black transition"
+                >
+                  Go to Setup
+                </button>
+              </section>
+            `;
+          }
+
+          const total = state.quizQuestions.length;
+          const currentNumber = state.currentQuestionIndex + 1;
+          const answeredCount = state.submitted
+            ? state.currentQuestionIndex + 1
+            : state.currentQuestionIndex;
+          const progressPercent = Math.round((currentNumber / total) * 100);
+          const sourceLinks = renderSourceLinks(question.sources);
+          const currentResult = state.quizResults[state.currentQuestionIndex];
+
+          return `
+            <section class="space-y-6">
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <div class="flex flex-wrap gap-3">
+                      <span class="inline-flex items-center rounded-full bg-lagoon/10 px-4 py-2 text-sm font-black text-lagoon">
+                        Question ${currentNumber} of ${total}
+                      </span>
+                      <span class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-black text-emerald-900">
+                        Correct: ${state.correctCount} / ${answeredCount} answered
+                      </span>
+                    </div>
+                    <p class="mt-4 text-sm font-black uppercase tracking-[0.24em] text-slate-500">
+                      Keep going
+                    </p>
+                    <div class="mt-3 h-4 w-full max-w-3xl overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        class="h-full rounded-full bg-gradient-to-r from-lagoon via-seafoam to-sunshine transition-all duration-300"
+                        style="width: ${progressPercent}%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div class="rounded-[1.5rem] bg-sky-100 px-5 py-4">
+                    <p class="text-sm font-black uppercase tracking-wide text-slate-500">
+                      Studying now
+                    </p>
+                    <p class="mt-1 text-xl font-black text-ink">
+                      ${state.selectedBookIds.length} book${state.selectedBookIds.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="rounded-[1.8rem] bg-white px-5 py-5 sm:px-7 sm:py-7">
+                  <div class="flex items-start gap-3">
+                    <div class="sticker flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sunshine to-coral text-2xl">
+                      ${getBookIcon(question.bookId)}
+                    </div>
+                    <div>
+                      <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
+                        Question
+                      </p>
+                      <h2 class="mt-2 text-2xl font-black leading-tight text-ink sm:text-3xl">
+                        ${escapeHtml(question.question)}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <fieldset class="mt-8">
+                    <legend class="sr-only">Choose your answer</legend>
+                    <div class="grid gap-4" role="radiogroup" aria-label="Answer choices">
+                      ${question.options
+                        .map((option, index) => renderOptionCard(option, index, question.answer))
+                        .join("")}
+                    </div>
+                  </fieldset>
+
+                  <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      data-action="submit-answer"
+                      ${state.selectedAnswer && !state.submitted ? "" : "disabled"}
+                      class="primary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                    >
+                      Submit Answer
+                    </button>
+                    ${
+                      state.submitted
+                        ? `
+                      <button
+                        data-action="${currentNumber === total ? "see-results" : "next-question"}"
+                        class="secondary-accent-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                      >
+                        ${currentNumber === total ? "See Results" : "Next Question"}
+                      </button>
+                    `
+                        : ""
+                    }
+                  </div>
+
+                  ${
+                    state.submitted
+                      ? `
+                    <div
+                      aria-live="polite"
+                      class="mt-8 rounded-[1.8rem] border-2 px-5 py-5 sm:px-6 ${
+                        currentResult && currentResult.isCorrect
+                          ? "border-emerald-300 bg-emerald-50"
+                          : "border-rose-300 bg-rose-50"
+                      }"
+                    >
+                      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p class="text-2xl font-black ${
+                            currentResult && currentResult.isCorrect
+                              ? "text-emerald-900"
+                              : "text-rose-900"
+                          }">
+                            ${currentResult && currentResult.isCorrect ? "Correct!" : "Not quite…"}
+                          </p>
+                          <p class="mt-2 text-lg font-black text-ink">
+                            ${escapeHtml(question.answer)}
+                          </p>
+                          <p class="mt-1 text-sm font-bold text-slate-600">
+                            by ${escapeHtml(question.author)}
+                          </p>
+                        </div>
+                        <div class="rounded-3xl bg-white/90 px-4 py-3 text-sm font-bold text-slate-700 shadow-sm">
+                          Your answer:
+                          <span class="text-ink">${escapeHtml(state.selectedAnswer)}</span>
+                        </div>
+                      </div>
+                      <p class="mt-4 text-base leading-7 text-slate-700">
+                        ${escapeHtml(question.explanation)}
+                      </p>
+                      <div class="mt-4 text-sm font-semibold text-slate-600">
+                        <span class="font-black text-slate-700">Source:</span>
+                        ${sourceLinks}
+                      </div>
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        function renderOptionCard(option, index, correctAnswer) {
+          const isSelected = state.selectedAnswer === option;
+          const isCorrect = option === correctAnswer;
+          const revealCorrect = state.submitted && isCorrect;
+          const revealWrong = state.submitted && isSelected && !isCorrect;
+
+          let cardClass = "option-button";
+          let badge = "";
+
+          if (!state.submitted && isSelected) {
+            cardClass = "option-button option-button-selected";
+            badge = `<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-sky-900">Selected</span>`;
+          }
+
+          if (revealCorrect) {
+            cardClass = "option-button option-button-correct";
+            badge = `<span class="rounded-full bg-emerald-200 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-900">Correct answer</span>`;
+          }
+
+          if (revealWrong) {
+            cardClass = "option-button option-button-wrong";
+            badge = `<span class="rounded-full bg-rose-200 px-3 py-1 text-xs font-black uppercase tracking-wide text-rose-900">Your pick</span>`;
+          }
+
+          return `
+            <button
+              type="button"
+              role="radio"
+              aria-checked="${isSelected}"
+              aria-label="Answer choice ${String.fromCharCode(65 + index)}: ${escapeAttribute(option)}"
+              data-action="select-answer"
+              data-answer="${escapeAttribute(option)}"
+              ${state.submitted ? "disabled" : ""}
+              class="flex min-h-[86px] w-full items-center justify-between gap-4 rounded-[1.6rem] border-2 px-5 py-4 text-left text-base font-black text-ink transition ${cardClass} ${state.submitted ? "cursor-default" : "cursor-pointer"}"
+            >
+              <span class="flex items-center gap-4">
+                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-sm font-black text-slate-700">
+                  ${String.fromCharCode(65 + index)}
+                </span>
+                <span>${escapeHtml(option)}</span>
+              </span>
+              ${badge}
+            </button>
+          `;
+        }
+
+        function renderResults() {
+          const total = state.quizQuestions.length;
+          const percent = total ? Math.round((state.correctCount / total) * 100) : 0;
+          const selectedBooks = getSelectedBooks();
+
+          return `
+            <section class="space-y-6">
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                  <div class="rounded-[2rem] bg-gradient-to-br from-lagoon via-seafoam to-sunshine px-6 py-8 text-white shadow-sticker">
+                    <p class="text-sm font-black uppercase tracking-[0.24em] text-white/85">
+                      Final score
+                    </p>
+                    <p class="mt-3 text-5xl font-black">${state.correctCount}/${total}</p>
+                    <p class="mt-2 text-lg font-black">${percent}% correct</p>
+                  </div>
+                  <div>
+                    <h2 class="title-font text-3xl font-black text-ink sm:text-4xl">
+                      ${getScoreHeadline(percent)}
+                    </h2>
+                    <p class="mt-3 text-lg leading-8 text-slate-700">
+                      You got ${state.correctCount} out of ${total} correct. ${getScoreMessage(percent)}
+                    </p>
+                    <div class="mt-5">
+                      <p class="text-sm font-black uppercase tracking-[0.24em] text-slate-500">
+                        Books in this quiz
+                      </p>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        ${selectedBooks
+                          .map(
+                            (book) => `
+                              <span class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-black text-ink shadow-sm">
+                                ${getBookIcon(book.id)} ${escapeHtml(book.title)}
+                              </span>
+                            `
+                          )
+                          .join("")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    data-action="restart-quiz"
+                    class="primary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Restart Quiz
+                  </button>
+                  <button
+                    data-action="go-setup"
+                    class="secondary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Try a New Setup
+                  </button>
+                  <button
+                    data-action="review-selected-books"
+                    class="secondary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Review All Selected Books
+                  </button>
+                </div>
+              </div>
+
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-2xl font-black text-ink">Quiz review</h3>
+                    <p class="mt-2 text-base text-slate-700">
+                      Look back at each question and see the explanation again.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="question-scroll mt-6 grid gap-4">
+                  ${state.quizResults
+                    .map((result, index) => {
+                      const book = bookMap.get(result.bookId);
+                      return `
+                        <article class="rounded-[1.6rem] bg-white px-5 py-5 shadow-sm">
+                          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ${
+                                  result.isCorrect
+                                    ? "bg-emerald-100 text-emerald-900"
+                                    : "bg-rose-100 text-rose-900"
+                                }">
+                                  ${result.isCorrect ? "Correct" : "Keep practicing"}
+                                </span>
+                                <span class="text-sm font-black text-slate-500">
+                                  Question ${index + 1}
+                                </span>
+                              </div>
+                              <p class="mt-3 text-lg font-black text-ink">
+                                ${escapeHtml(result.question)}
+                              </p>
+                              <p class="mt-3 text-sm font-semibold text-slate-600">
+                                Your answer: <span class="font-black text-ink">${escapeHtml(result.selectedAnswer)}</span>
+                              </p>
+                              <p class="mt-1 text-sm font-semibold text-slate-600">
+                                Correct answer: <span class="font-black text-ink">${escapeHtml(result.answer)}</span>
+                                ${
+                                  book
+                                    ? `<span class="text-slate-500"> • ${escapeHtml(book.author)}</span>`
+                                    : ""
+                                }
+                              </p>
+                            </div>
+                            <div class="text-3xl">${book ? getBookIcon(book.id) : "📚"}</div>
+                          </div>
+                          <p class="mt-4 text-base leading-7 text-slate-700">
+                            ${escapeHtml(result.explanation)}
+                          </p>
+                          <div class="mt-4 text-sm font-semibold text-slate-600">
+                            <span class="font-black text-slate-700">Source:</span>
+                            ${renderSourceLinks(result.sources)}
+                          </div>
+                        </article>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        function renderReview() {
+          const selectedBooks = getSelectedBooks();
+          const grouped = selectedBooks
+            .map((book) => ({
+              book,
+              questions: questionBank.filter((question) => question.bookId === book.id),
+            }))
+            .filter((group) => group.questions.length > 0);
+
+          return `
+            <section class="space-y-6">
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
+                      Review mode
+                    </p>
+                    <h2 class="title-font mt-2 text-3xl font-black text-ink sm:text-4xl">
+                      Study all of your selected books in one place.
+                    </h2>
+                    <p class="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+                      Scroll by book, read the question prompts, and use the explanations as quick study clues.
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <span class="inline-flex items-center rounded-full bg-lagoon/10 px-4 py-2 text-sm font-black text-lagoon">
+                      ${selectedBooks.length} selected book${selectedBooks.length === 1 ? "" : "s"}
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-black text-emerald-900">
+                      ${getAvailableQuestions().length} question clues
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    data-action="go-setup"
+                    class="primary-button min-h-[56px] rounded-full px-8 py-4 text-lg font-black transition"
+                  >
+                    Choose Books
+                  </button>
+                  <button
+                    data-action="restart-quiz"
+                    ${
+                      canBeginQuiz() ? "" : "disabled"
+                    }
+                    class="secondary-accent-button min-h-[56px] rounded-full px-8 py-4 text-lg font-black transition disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    Start Quiz With These Books
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-5">
+                ${
+                  grouped.length
+                    ? grouped
+                        .map(
+                          (group) => `
+                      <section class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                        <div class="flex items-start gap-4">
+                          <div class="sticker flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-lagoon to-seafoam text-3xl text-white">
+                            ${getBookIcon(group.book.id)}
+                          </div>
+                          <div class="min-w-0">
+                            <h3 class="text-2xl font-black text-ink">
+                              ${escapeHtml(group.book.title)}
+                            </h3>
+                            <p class="mt-1 text-sm font-semibold text-slate-600">
+                              ${escapeHtml(group.book.author)}
+                            </p>
+                          </div>
+                        </div>
+                        <div class="mt-6 grid gap-4">
+                          ${group.questions
+                            .map(
+                              (question, index) => `
+                                <article class="rounded-[1.6rem] bg-white px-5 py-5 shadow-sm">
+                                  <div class="flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-sky-900">
+                                      Question clue ${index + 1}
+                                    </span>
+                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-slate-700">
+                                      ${escapeHtml(question.evidenceLevel)} confidence
+                                    </span>
+                                  </div>
+                                  <p class="mt-3 text-lg font-black text-ink">
+                                    ${escapeHtml(question.question)}
+                                  </p>
+                                  <p class="mt-4 text-base leading-7 text-slate-700">
+                                    ${escapeHtml(question.explanation)}
+                                  </p>
+                                  <div class="mt-4 text-sm font-semibold text-slate-600">
+                                    <span class="font-black text-slate-700">Source:</span>
+                                    ${renderSourceLinks(question.sources)}
+                                  </div>
+                                </article>
+                              `
+                            )
+                            .join("")}
+                        </div>
+                      </section>
+                    `
+                        )
+                        .join("")
+                    : `
+                      <section class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                        <div class="rounded-[1.8rem] border border-amber-200 bg-amber-50 px-5 py-5 text-amber-950">
+                          <p class="text-xl font-black">Pick a few books to unlock review mode.</p>
+                          <p class="mt-2 text-base leading-7 text-amber-900">
+                            Once you choose books in setup, this page will show all of their question clues and explanations.
+                          </p>
+                          <button
+                            data-action="go-setup"
+                            class="primary-button mt-5 min-h-[52px] rounded-full px-6 py-3 text-base font-black"
+                          >
+                            Choose Books
+                          </button>
+                        </div>
+                      </section>
+                    `
+                }
+              </div>
+            </section>
+          `;
+        }
+
+        function renderSourceLinks(sources) {
+          if (!sources || !sources.length) return "Source note not available";
+          return sources
+            .map((source) => {
+              const label = formatSourceLabel(source);
+              return `<a class="font-black text-lagoon underline decoration-lagoon/30 underline-offset-2" href="${escapeAttribute(
+                source
+              )}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
+            })
+            .join('<span class="mx-2 text-slate-400">•</span>');
+        }
+
+        function formatSourceLabel(url) {
+          try {
+            const parsed = new URL(url);
+            return parsed.hostname.replace(/^www\./, "");
+          } catch (error) {
+            return url;
+          }
+        }
+
+        function getScoreHeadline(percent) {
+          if (percent >= 90) return "Book-battle superstar!";
+          if (percent >= 75) return "Strong reading memory!";
+          if (percent >= 55) return "Nice job growing your quiz power!";
+          return "Good practice today!";
+        }
+
+        function getScoreMessage(percent) {
+          if (percent >= 90) {
+            return "You remembered a lot of important details. That is tournament-ready practice.";
+          }
+          if (percent >= 75) {
+            return "You are building strong recall. A little more review can push you even higher.";
+          }
+          if (percent >= 55) {
+            return "You are learning the hot spots. Review the explanations and try again.";
+          }
+          return "Each round helps your brain notice more details. Read the review cards and give it another try.";
+        }
+
+        function getBookIcon(bookId) {
+          return BOOK_ICON_MAP[bookId] || "📚";
+        }
+
+        function escapeHtml(value) {
+          return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function escapeAttribute(value) {
+          return escapeHtml(value).replace(/`/g, "&#96;");
+        }
+      })();
+    </script>
+  </body>
+</html>
