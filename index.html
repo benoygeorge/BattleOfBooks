@@ -338,6 +338,7 @@
           questionCount: "botb_question_count_v3",
           quizSession: "botb_quiz_session_v1",
         };
+        const WRONG_ANSWER_LOCK_MS = 10000;
 
         const ALL_BOOK_IDS = bookCatalog.map((book) => book.id);
         const DEFAULT_BOOKS = [];
@@ -919,7 +920,7 @@
             clearFeedbackUnlockTimer();
           } else {
             playWrongSound();
-            state.feedbackUnlockUntil = Date.now() + 4000;
+            state.feedbackUnlockUntil = Date.now() + WRONG_ANSWER_LOCK_MS;
             ensureFeedbackUnlockTimer();
           }
 
@@ -986,7 +987,7 @@
 
         function clearFeedbackUnlockTimer() {
           if (feedbackUnlockTimerId) {
-            window.clearTimeout(feedbackUnlockTimerId);
+            window.clearInterval(feedbackUnlockTimerId);
             feedbackUnlockTimerId = null;
           }
         }
@@ -1002,11 +1003,13 @@
             state.feedbackUnlockUntil = 0;
             return;
           }
-          feedbackUnlockTimerId = window.setTimeout(() => {
-            state.feedbackUnlockUntil = 0;
-            feedbackUnlockTimerId = null;
+          feedbackUnlockTimerId = window.setInterval(() => {
+            if (getContinuationLockRemainingMs() <= 0) {
+              state.feedbackUnlockUntil = 0;
+              clearFeedbackUnlockTimer();
+            }
             render();
-          }, remaining + 25);
+          }, 250);
         }
 
         function getAudioContext() {
@@ -1015,6 +1018,16 @@
           if (!AudioCtor) return null;
           audioContext = new AudioCtor();
           return audioContext;
+        }
+
+        function unlockAudioContext() {
+          const context = getAudioContext();
+          if (!context) return Promise.resolve(null);
+          if (context.state === "running") return Promise.resolve(context);
+          return context
+            .resume()
+            .then(() => context)
+            .catch(() => null);
         }
 
         function playTone(context, { frequency, startTime, duration, type = "sine", volume = 0.08 }) {
@@ -1032,21 +1045,45 @@
         }
 
         function playCorrectSound() {
-          const context = getAudioContext();
-          if (!context) return;
-          if (context.state === "suspended") context.resume();
-          const start = context.currentTime;
-          playTone(context, { frequency: 660, startTime: start, duration: 0.12, type: "triangle", volume: 0.06 });
-          playTone(context, { frequency: 880, startTime: start + 0.13, duration: 0.16, type: "triangle", volume: 0.07 });
+          unlockAudioContext().then((context) => {
+            if (!context) return;
+            const start = context.currentTime + 0.01;
+            playTone(context, {
+              frequency: 740,
+              startTime: start,
+              duration: 0.14,
+              type: "triangle",
+              volume: 0.12,
+            });
+            playTone(context, {
+              frequency: 988,
+              startTime: start + 0.15,
+              duration: 0.2,
+              type: "triangle",
+              volume: 0.14,
+            });
+          });
         }
 
         function playWrongSound() {
-          const context = getAudioContext();
-          if (!context) return;
-          if (context.state === "suspended") context.resume();
-          const start = context.currentTime;
-          playTone(context, { frequency: 320, startTime: start, duration: 0.18, type: "sawtooth", volume: 0.045 });
-          playTone(context, { frequency: 220, startTime: start + 0.12, duration: 0.22, type: "sawtooth", volume: 0.04 });
+          unlockAudioContext().then((context) => {
+            if (!context) return;
+            const start = context.currentTime + 0.01;
+            playTone(context, {
+              frequency: 300,
+              startTime: start,
+              duration: 0.2,
+              type: "square",
+              volume: 0.08,
+            });
+            playTone(context, {
+              frequency: 196,
+              startTime: start + 0.14,
+              duration: 0.28,
+              type: "square",
+              volume: 0.08,
+            });
+          });
         }
 
         function render() {
