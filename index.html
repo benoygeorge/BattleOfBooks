@@ -316,6 +316,7 @@
         const STORAGE_KEYS = {
           selectedBooks: "botb_selected_books_v3",
           questionCount: "botb_question_count_v3",
+          quizSession: "botb_quiz_session_v1",
         };
 
         const ALL_BOOK_IDS = bookCatalog.map((book) => book.id);
@@ -367,11 +368,14 @@
           quizResults: [],
         };
 
+        hydrateStateFromSavedSession();
         normalizePreferences();
 
         app.addEventListener("click", handleClick);
         app.addEventListener("change", handleChange);
         app.addEventListener("input", handleInput);
+        window.addEventListener("pagehide", persistAppState);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
         render();
 
@@ -396,6 +400,89 @@
           }
         }
 
+        function loadSavedQuizSession() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.quizSession);
+            const parsed = raw ? JSON.parse(raw) : null;
+            if (!parsed || typeof parsed !== "object") return null;
+
+            const selectedBookIds = Array.isArray(parsed.selectedBookIds)
+              ? parsed.selectedBookIds.filter((id) => bookMap.has(id))
+              : [];
+            const quizQuestions = Array.isArray(parsed.quizQuestions)
+              ? parsed.quizQuestions.filter(isValidSavedQuestion)
+              : [];
+            const quizResults = Array.isArray(parsed.quizResults)
+              ? parsed.quizResults.filter((result) => result && typeof result === "object")
+              : [];
+            const questionCountInput =
+              typeof parsed.questionCountInput === "string" && /^\d*$/.test(parsed.questionCountInput)
+                ? parsed.questionCountInput
+                : "10";
+            const currentQuestionIndex = Number.isInteger(parsed.currentQuestionIndex)
+              ? parsed.currentQuestionIndex
+              : 0;
+            const correctCount = Number.isInteger(parsed.correctCount) ? parsed.correctCount : 0;
+            const selectedAnswer =
+              typeof parsed.selectedAnswer === "string" ? parsed.selectedAnswer : "";
+            const submitted = Boolean(parsed.submitted);
+            const view =
+              typeof parsed.view === "string" &&
+              ["home", "setup", "quiz", "results", "review"].includes(parsed.view)
+                ? parsed.view
+                : "quiz";
+
+            if (!quizQuestions.length) return null;
+
+            return {
+              view,
+              selectedBookIds,
+              questionCountInput,
+              quizQuestions,
+              currentQuestionIndex: Math.min(
+                Math.max(currentQuestionIndex, 0),
+                quizQuestions.length - 1
+              ),
+              selectedAnswer,
+              submitted,
+              correctCount: Math.max(correctCount, 0),
+              quizResults,
+            };
+          } catch (error) {
+            return null;
+          }
+        }
+
+        function isValidSavedQuestion(question) {
+          return (
+            question &&
+            typeof question === "object" &&
+            typeof question.id === "string" &&
+            typeof question.bookId === "string" &&
+            bookMap.has(question.bookId) &&
+            typeof question.question === "string" &&
+            typeof question.answer === "string" &&
+            typeof question.author === "string" &&
+            Array.isArray(question.options) &&
+            question.options.length >= 2
+          );
+        }
+
+        function hydrateStateFromSavedSession() {
+          const savedSession = loadSavedQuizSession();
+          if (!savedSession) return;
+
+          state.view = savedSession.view;
+          state.selectedBookIds = savedSession.selectedBookIds;
+          state.questionCountInput = savedSession.questionCountInput;
+          state.quizQuestions = savedSession.quizQuestions;
+          state.currentQuestionIndex = savedSession.currentQuestionIndex;
+          state.selectedAnswer = savedSession.selectedAnswer;
+          state.submitted = savedSession.submitted;
+          state.correctCount = savedSession.correctCount;
+          state.quizResults = savedSession.quizResults;
+        }
+
         function persistPreferences() {
           try {
             localStorage.setItem(
@@ -410,6 +497,38 @@
             }
           } catch (error) {
             // Ignore localStorage issues in locked-down browsers.
+          }
+        }
+
+        function persistAppState() {
+          persistPreferences();
+          try {
+            if (!state.quizQuestions.length) {
+              localStorage.removeItem(STORAGE_KEYS.quizSession);
+              return;
+            }
+            localStorage.setItem(
+              STORAGE_KEYS.quizSession,
+              JSON.stringify({
+                view: state.view,
+                selectedBookIds: state.selectedBookIds,
+                questionCountInput: state.questionCountInput,
+                quizQuestions: state.quizQuestions,
+                currentQuestionIndex: state.currentQuestionIndex,
+                selectedAnswer: state.selectedAnswer,
+                submitted: state.submitted,
+                correctCount: state.correctCount,
+                quizResults: state.quizResults,
+              })
+            );
+          } catch (error) {
+            // Ignore localStorage issues in locked-down browsers.
+          }
+        }
+
+        function handleVisibilityChange() {
+          if (document.visibilityState === "hidden") {
+            persistAppState();
           }
         }
 
@@ -446,6 +565,11 @@
 
           if (action === "start-from-home") {
             setView("setup");
+            return;
+          }
+
+          if (action === "resume-quiz") {
+            setView(getResumeTargetView(), { scroll: false });
             return;
           }
 
@@ -539,10 +663,12 @@
           render();
         }
 
-        function setView(view) {
+        function setView(view, options = {}) {
           state.view = view;
           render();
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          if (options.scroll !== false) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         }
 
         function toggleBook(bookId) {
@@ -585,6 +711,19 @@
             return `Author of ${book.title}`;
           }
           return `by ${book.author}`;
+        }
+
+        function hasSavedQuiz() {
+          return state.quizQuestions.length > 0;
+        }
+
+        function getResumeTargetView() {
+          if (!hasSavedQuiz()) return "setup";
+          if (state.view === "results" || state.view === "review") return state.view;
+          if (state.currentQuestionIndex >= state.quizQuestions.length - 1 && state.submitted) {
+            return "results";
+          }
+          return "quiz";
         }
 
         function parseCountInput(value) {
@@ -757,7 +896,6 @@
 
           state.submitted = true;
           render();
-          window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
         function goToNextQuestion() {
@@ -770,7 +908,6 @@
           state.selectedAnswer = "";
           state.submitted = false;
           render();
-          window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
         function getCurrentQuestion() {
@@ -803,6 +940,7 @@
         }
 
         function render() {
+          persistAppState();
           app.innerHTML = `
             <div class="px-4 pb-12 pt-4 sm:px-6 lg:px-8">
               ${renderHeader()}
@@ -900,12 +1038,26 @@
                   <p class="mt-2 text-base font-semibold text-slate-700">
                     Tap the big button to choose your books and begin the quiz setup.
                   </p>
-                  <button
-                    data-action="start-from-home"
-                    class="hero-cta mt-4 inline-flex min-h-[60px] items-center justify-center rounded-full px-8 py-4 text-lg font-black transition hover:-translate-y-1"
-                  >
-                    Start New Quiz
-                  </button>
+                  <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      data-action="start-from-home"
+                      class="hero-cta inline-flex min-h-[60px] items-center justify-center rounded-full px-8 py-4 text-lg font-black transition hover:-translate-y-1"
+                    >
+                      Start New Quiz
+                    </button>
+                    ${
+                      hasSavedQuiz()
+                        ? `
+                      <button
+                        data-action="resume-quiz"
+                        class="secondary-accent-button inline-flex min-h-[60px] items-center justify-center rounded-full px-8 py-4 text-lg font-black transition"
+                      >
+                        Resume Saved Quiz
+                      </button>
+                    `
+                        : ""
+                    }
+                  </div>
                 </div>
                 <div class="mt-6 grid gap-3 sm:grid-cols-3">
                   <div class="rounded-3xl bg-sky-100 px-4 py-4">
@@ -937,6 +1089,15 @@
                   Tip: students can practice all ${bookCatalog.length} books or only the ones they want
                   to study today.
                 </p>
+                ${
+                  hasSavedQuiz()
+                    ? `
+                  <p class="mt-2 text-sm font-semibold text-emerald-700">
+                    Your current quiz progress is saved on this device.
+                  </p>
+                `
+                    : ""
+                }
               </div>
 
               <div class="grid gap-5">
@@ -1191,6 +1352,18 @@
                   >
                     Begin Quiz
                   </button>
+                  ${
+                    hasSavedQuiz()
+                      ? `
+                    <button
+                      data-action="resume-quiz"
+                      class="secondary-accent-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
+                    >
+                      Resume Saved Quiz
+                    </button>
+                  `
+                      : ""
+                  }
                   <button
                     data-action="go-home"
                     class="secondary-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
@@ -1258,6 +1431,9 @@
                     </p>
                     <p class="mt-1 text-xl font-black text-ink">
                       ${state.selectedBookIds.length} book${state.selectedBookIds.length === 1 ? "" : "s"}
+                    </p>
+                    <p class="mt-2 text-sm font-semibold text-slate-600">
+                      Saved automatically on this device
                     </p>
                   </div>
                 </div>
