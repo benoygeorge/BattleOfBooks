@@ -40,6 +40,57 @@ const bookCatalog = [
   { id: "dealing-with-dragons", title: "Dealing with Dragons", author: "Patricia C. Wrede" }
 ];
 
+const BOOK_TAGS = {
+  "the-very-very-far-north": ["animals", "friendship", "humor", "adventure"],
+  "the-terrible-two": ["school", "humor", "friendship", "mischief"],
+  "whoosh-lonnie-johnsons-super-soaking-stream-of-inventions": ["biography", "science", "invention", "history"],
+  "el-deafo": ["school", "realistic", "identity", "friendship"],
+  "book-scavenger": ["mystery", "books", "puzzles", "adventure"],
+  "seven-wonders-of-sassafras-springs": ["small-town", "family", "mystery", "discovery"],
+  "gregor-the-overlander": ["fantasy", "quest", "family", "adventure"],
+  "the-way-to-rio-luna": ["fantasy", "portal", "family", "adventure"],
+  "ruby-holler": ["family", "realistic", "adventure", "healing"],
+  "bud-not-buddy": ["historical", "family", "journey", "music"],
+  "dragons-in-a-bag": ["fantasy", "dragons", "city", "adventure"],
+  "dog-squad": ["animals", "humor", "adventure", "friendship"],
+  "the-million-dollar-shot": ["sports", "realistic", "contest", "school"],
+  found: ["mystery", "science-fiction", "time-travel", "family"],
+  "the-detectives-assistant": ["mystery", "historical", "detective", "adventure"],
+  "full-of-beans": ["historical", "realistic", "humor", "family"],
+  "regarding-the-fountain": ["school", "mystery", "humor", "letters"],
+  restart: ["school", "realistic", "identity", "friendship"],
+  "pie-in-the-sky": ["family", "realistic", "food", "immigration"],
+  savvy: ["fantasy", "family", "powers", "journey"],
+  "where-the-mountain-meets-the-moon": ["fantasy", "quest", "stories", "dragon"],
+  glitch: ["science-fiction", "time-travel", "school", "adventure"],
+  "snow-treasure": ["historical", "war", "survival", "adventure"],
+  "becoming-muhammad-ali": ["biography", "sports", "history", "identity"],
+  "the-camping-trip-that-changed-america": ["biography", "history", "nature", "leadership"],
+  "harry-potter-and-the-sorcerers-stone": ["fantasy", "school", "magic", "friendship"],
+  "night-of-the-twisters": ["survival", "weather", "realistic", "disaster"],
+  "dealing-with-dragons": ["fantasy", "dragons", "humor", "adventure"],
+};
+
+function getBookTags(bookId) {
+  return BOOK_TAGS[bookId] || [];
+}
+
+function getSharedTagScore(firstBookId, secondBookId) {
+  const firstTags = new Set(getBookTags(firstBookId));
+  return getBookTags(secondBookId).reduce(
+    (score, tag) => score + (firstTags.has(tag) ? 1 : 0),
+    0
+  );
+}
+
+function mergeSources(...sourceLists) {
+  return Array.from(new Set(sourceLists.flat().filter(Boolean)));
+}
+
+function mergeEvidenceLevels(...levels) {
+  return levels.includes("medium") ? "medium" : "high";
+}
+
 function makeBookQuestions({
   bookId,
   answer,
@@ -215,11 +266,11 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book is a boy challenged to find seven wonders in his own town instead of traveling out West?",
+        "In which book is a boy challenged to find a set of local marvels in his own town instead of traveling out West?",
         "Eben's father tells him to look for wonders in Sassafras Springs before dreaming of bigger journeys."
       ],
       [
-        "In which book do wonders include a flying outhouse and an evil ship in a bottle?",
+        "In which book do the hometown marvels include a flying outhouse and an evil ship in a bottle?",
         "The official book page lists odd, story-filled local marvels instead of famous world monuments."
       ],
       [
@@ -360,7 +411,7 @@ const storyQuestionBank = [
         "Jaxon expects an awful day with Ma, but instead learns that she is a witch with a dangerous job."
       ],
       [
-        "In which book do two simple rules about baby dragons get broken almost immediately?",
+        "In which book do two simple rules about a group of magical hatchlings get broken almost immediately?",
         "Ma warns Jax not to let the dragons out of the bag and not to feed them anything sweet, but the rules do not last long."
       ],
       [
@@ -368,7 +419,7 @@ const storyQuestionBank = [
         "Once the dragons escape, Jax, Vikram, and Kavita have to keep the city from becoming their permanent home."
       ],
       [
-        "In which book does delivering baby dragons to a safe magical world become a kid's impossible assignment?",
+        "In which book does delivering several tiny magical creatures to a safe world become a kid's impossible assignment?",
         "Ma's mission depends on Jax helping get the baby dragons somewhere safer than Brooklyn."
       ]
     ]
@@ -413,7 +464,7 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book does a boy win a chance to shoot one free throw for a million dollars at an NBA Finals game?",
+        "In which book does a boy win a chance to shoot one free throw for a seven-figure prize at an NBA Finals game?",
         "Eddie wins a contest whose grand prize is one pressure-packed shot worth a million dollars."
       ],
       [
@@ -474,15 +525,15 @@ const storyQuestionBank = [
         "Nell reaches Chicago determined to prove useful so she will not be returned to an orphanage."
       ],
       [
-        "In which book does a child discover that her aunt is the first female private detective working for a famous agency?",
+        "In which book does a child discover that her aunt is the first female private investigator working for a famous agency?",
         "Nell learns that Aunt Kitty is really Kate Warne of the Pinkerton National Detective Agency."
       ],
       [
-        "In which book do disguises, false identities, and secret investigations pull a girl into detective work?",
+        "In which book do disguises, false identities, and secret investigations pull a girl into real casework?",
         "Nell ends up helping with cases that depend on quick thinking and clever disguises."
       ],
       [
-        "In which book does a young detective helper become involved in protecting a president from an early assassination plot?",
+        "In which book does a young helper become involved in protecting a president from an early assassination plot?",
         "The story links Nell's adventures to the effort to keep Abraham Lincoln safe."
       ]
     ]
@@ -526,19 +577,19 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book does a leaky school fountain set off a chain reaction of letters and confusion?",
+        "In which book does a leaky school water fixture set off a chain reaction of notes and confusion?",
         "Dry Creek Middle School needs a new fountain, but the request quickly turns into comic chaos."
       ],
       [
-        "In which book does a principal ask a fifth grader to write a letter about buying a new drinking fountain?",
+        "In which book does a principal ask a fifth grader to write a letter about buying a new hall water fixture?",
         "That first letter is what launches the entire tangle of misunderstandings in the book."
       ],
       [
-        "In which book is the story told through letters, memos, newspaper clippings, and notices instead of normal chapters?",
+        "In which book is the story told through notes, memos, newspaper clippings, and notices instead of normal chapters?",
         "The unusual format is one of the book's signature features and helps readers piece together the mystery."
       ],
       [
-        "In which book does solving a fountain problem uncover a mystery about why a town's creek dried up years before?",
+        "In which book does solving a school water problem uncover a mystery about why a town's creek dried up years before?",
         "The investigation into the fountain eventually connects to the larger history of Dry Creek itself."
       ]
     ]
@@ -639,7 +690,7 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book does a poor girl leave home to ask the Old Man of the Moon how to change her family's fortune?",
+        "In which book does a poor girl leave home to ask a wise old man in the sky how to change her family's fortune?",
         "Minli begins her quest because she wants to improve her parents' hard life."
       ],
       [
@@ -700,7 +751,7 @@ const storyQuestionBank = [
         "The children of the village become the perfect couriers because sledding makes them look harmless."
       ],
       [
-        "In which book must a country's treasure reach a waiting ship before the enemy discovers the plan?",
+        "In which book must a country's hidden gold reach a waiting ship before the enemy discovers the plan?",
         "The gold has to get to the Cleng Peerson if it is going to escape safely."
       ],
       [
@@ -753,7 +804,7 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book does a president go camping in Yosemite with a famous naturalist for three days?",
+        "In which book does a president spend three days outdoors in Yosemite with a famous naturalist?",
         "The book tells the story of Theodore Roosevelt's trip with John Muir in the Yosemite mountains."
       ],
       [
@@ -761,7 +812,7 @@ const storyQuestionBank = [
         "Barb Rosenstock frames Roosevelt and Muir as opposites whose friendship becomes powerful."
       ],
       [
-        "In which book does a camping trip help change the way a country thinks about forests and wild land?",
+        "In which book does a three-day wilderness outing help change the way a country thinks about forests and wild land?",
         "Their time together becomes a turning point in the history of conservation and national parks."
       ],
       [
@@ -793,7 +844,7 @@ const storyQuestionBank = [
         "The Mirror of Erised reveals Harry's deepest longing when he sees his parents there."
       ],
       [
-        "In which book do three friends pass a series of magical protections to keep a powerful stone away from a villain?",
+        "In which book do three friends pass a series of magical protections to keep a powerful object away from a villain?",
         "Harry, Ron, and Hermione work through the obstacles guarding the Sorcerer's Stone."
       ]
     ]
@@ -810,7 +861,7 @@ const storyQuestionBank = [
     ],
     questions: [
       [
-        "In which book do seven tornadoes strike in a single terrifying night?",
+        "In which book do seven tornadoes strike during one terrifying evening and its aftermath?",
         "The novel is based on the famous tornado outbreak that hit Grand Island, Nebraska."
       ],
       [
@@ -851,7 +902,7 @@ const storyQuestionBank = [
         "Living with Kazul suits Cimorene far better than embroidery lessons and etiquette ever did."
       ],
       [
-        "In which book does a warning about dragonsbane reveal that wizards are threatening the dragons themselves?",
+        "In which book does a warning about a deadly poison reveal that wizards are threatening the kingdom's fire-breathing rulers themselves?",
         "The plot eventually turns toward the wizards' poison and the danger it poses to dragon leadership."
       ]
     ]
@@ -860,6 +911,21 @@ const storyQuestionBank = [
 
 function getBookReferenceQuestion(bookId) {
   return storyQuestionBank.find((question) => question.bookId === bookId) || null;
+}
+
+function getStoryQuestionsForBook(bookId) {
+  return storyQuestionBank.filter((question) => question.bookId === bookId);
+}
+
+function getRelatedStoryQuestions(baseQuestion) {
+  return storyQuestionBank
+    .filter((candidate) => candidate.bookId !== baseQuestion.bookId)
+    .sort((firstCandidate, secondCandidate) => {
+      const firstScore = getSharedTagScore(baseQuestion.bookId, firstCandidate.bookId);
+      const secondScore = getSharedTagScore(baseQuestion.bookId, secondCandidate.bookId);
+      if (secondScore !== firstScore) return secondScore - firstScore;
+      return firstCandidate.id.localeCompare(secondCandidate.id);
+    });
 }
 
 function makeCatalogMatchQuestions() {
@@ -912,17 +978,54 @@ function makeContentMatchQuestions() {
   }));
 }
 
+function makeAuthorClueQuestions() {
+  return storyQuestionBank.map((question) => ({
+    id: `${question.id}-author-clue`,
+    bookId: question.bookId,
+    question: `Which author wrote the book described by this clue: ${question.explanation}`,
+    answer: question.author,
+    author: question.author,
+    answerType: "author",
+    questionKind: "author-from-detail",
+    explanation: `${question.explanation} ${question.author} wrote ${question.answer}.`,
+    evidenceLevel: question.evidenceLevel,
+    sources: question.sources
+  }));
+}
+
+function makeDetailEliminationQuestions() {
+  return storyQuestionBank.map((question) => {
+    const distractor = getRelatedStoryQuestions(question)[0];
+
+    return {
+      id: `${question.id}-detail-elimination`,
+      bookId: question.bookId,
+      question: `Which clue does NOT belong in ${question.answer}?`,
+      answer: distractor.explanation,
+      author: question.author,
+      answerType: "detail",
+      questionKind: "detail-not-in-book",
+      explanation: `${distractor.explanation} That clue belongs in ${distractor.answer} by ${distractor.author}, not ${question.answer}.`,
+      evidenceLevel: mergeEvidenceLevels(question.evidenceLevel, distractor.evidenceLevel),
+      sources: mergeSources(question.sources, distractor.sources)
+    };
+  });
+}
+
 const questionBank = [
   ...storyQuestionBank,
   ...makeCatalogMatchQuestions(),
-  ...makeContentMatchQuestions()
+  ...makeContentMatchQuestions(),
+  ...makeAuthorClueQuestions(),
+  ...makeDetailEliminationQuestions()
 ];
 
 if (typeof window !== "undefined") {
   window.bookCatalog = bookCatalog;
+  window.BOOK_TAGS = BOOK_TAGS;
   window.questionBank = questionBank;
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { bookCatalog, questionBank };
+  module.exports = { BOOK_TAGS, bookCatalog, questionBank };
 }

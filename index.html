@@ -336,7 +336,9 @@
         const STORAGE_KEYS = {
           selectedBooks: "botb_selected_books_v3",
           questionCount: "botb_question_count_v3",
-          quizSession: "botb_quiz_session_v1",
+          difficultyMode: "botb_difficulty_mode_v1",
+          missHistory: "botb_missed_questions_v1",
+          quizSession: "botb_quiz_session_v2",
         };
         const WRONG_ANSWER_LOCK_MS = 10000;
 
@@ -372,10 +374,57 @@
           "night-of-the-twisters": "🌪️",
           "dealing-with-dragons": "🐲",
         };
+        const DIFFICULTY_MODES = {
+          practice: {
+            label: "Practice",
+            shortLabel: "Practice",
+            description: "Balanced mix with friendlier answer choices.",
+            preferredKinds: [
+              "detail-from-book",
+              "story-book",
+              "author-from-detail",
+              "author-from-title",
+              "book-from-author",
+              "detail-not-in-book",
+            ],
+            replayMisses: false,
+            smartDistractors: false,
+          },
+          challenge: {
+            label: "Challenge",
+            shortLabel: "Challenge",
+            description: "Harder clue questions, look-alike choices, and missed-clue replay.",
+            preferredKinds: [
+              "detail-not-in-book",
+              "author-from-detail",
+              "detail-from-book",
+              "book-from-author",
+              "story-book",
+              "author-from-title",
+            ],
+            replayMisses: true,
+            smartDistractors: true,
+          },
+          expert: {
+            label: "Expert",
+            shortLabel: "Expert",
+            description: "Mostly indirect clue questions with the toughest distractors.",
+            preferredKinds: [
+              "detail-not-in-book",
+              "author-from-detail",
+              "detail-from-book",
+              "book-from-author",
+            ],
+            replayMisses: true,
+            smartDistractors: true,
+          },
+        };
+        const DEFAULT_DIFFICULTY_MODE = "challenge";
 
         const app = document.getElementById("app");
         const confettiRoot = document.getElementById("confetti-root");
         const bookMap = new Map(bookCatalog.map((book) => [book.id, book]));
+        const bookTagMap = typeof BOOK_TAGS === "object" && BOOK_TAGS ? BOOK_TAGS : {};
         let feedbackUnlockTimerId = null;
         let audioContext = null;
 
@@ -383,6 +432,7 @@
           view: "home",
           selectedBookIds: loadSelectedBooks(),
           questionCountInput: loadQuestionCount(),
+          difficultyMode: loadDifficultyMode(),
           quizQuestions: [],
           currentQuestionIndex: 0,
           selectedAnswer: "",
@@ -390,6 +440,7 @@
           correctCount: 0,
           quizResults: [],
           feedbackUnlockUntil: 0,
+          missedQuestionCounts: loadMissHistory(),
         };
 
         hydrateStateFromSavedSession();
@@ -424,6 +475,30 @@
           }
         }
 
+        function loadDifficultyMode() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.difficultyMode);
+            return raw && DIFFICULTY_MODES[raw] ? raw : DEFAULT_DIFFICULTY_MODE;
+          } catch (error) {
+            return DEFAULT_DIFFICULTY_MODE;
+          }
+        }
+
+        function loadMissHistory() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.missHistory);
+            const parsed = raw ? JSON.parse(raw) : null;
+            if (!parsed || typeof parsed !== "object") return {};
+            return Object.fromEntries(
+              Object.entries(parsed).filter(
+                ([questionId, count]) => typeof questionId === "string" && Number.isFinite(count) && count > 0
+              )
+            );
+          } catch (error) {
+            return {};
+          }
+        }
+
         function loadSavedQuizSession() {
           try {
             const raw = localStorage.getItem(STORAGE_KEYS.quizSession);
@@ -443,6 +518,10 @@
               typeof parsed.questionCountInput === "string" && /^\d*$/.test(parsed.questionCountInput)
                 ? parsed.questionCountInput
                 : "10";
+            const difficultyMode =
+              typeof parsed.difficultyMode === "string" && DIFFICULTY_MODES[parsed.difficultyMode]
+                ? parsed.difficultyMode
+                : loadDifficultyMode();
             const currentQuestionIndex = Number.isInteger(parsed.currentQuestionIndex)
               ? parsed.currentQuestionIndex
               : 0;
@@ -466,6 +545,7 @@
               view,
               selectedBookIds,
               questionCountInput,
+              difficultyMode,
               quizQuestions,
               currentQuestionIndex: Math.min(
                 Math.max(currentQuestionIndex, 0),
@@ -504,6 +584,7 @@
           state.view = savedSession.view;
           state.selectedBookIds = savedSession.selectedBookIds;
           state.questionCountInput = savedSession.questionCountInput;
+          state.difficultyMode = savedSession.difficultyMode;
           state.quizQuestions = savedSession.quizQuestions;
           state.currentQuestionIndex = savedSession.currentQuestionIndex;
           state.selectedAnswer = savedSession.selectedAnswer;
@@ -526,6 +607,7 @@
                 state.questionCountInput
               );
             }
+            localStorage.setItem(STORAGE_KEYS.difficultyMode, state.difficultyMode);
           } catch (error) {
             // Ignore localStorage issues in locked-down browsers.
           }
@@ -544,6 +626,7 @@
                 view: state.view,
                 selectedBookIds: state.selectedBookIds,
                 questionCountInput: state.questionCountInput,
+                difficultyMode: state.difficultyMode,
                 quizQuestions: state.quizQuestions,
                 currentQuestionIndex: state.currentQuestionIndex,
                 selectedAnswer: state.selectedAnswer,
@@ -558,13 +641,44 @@
           }
         }
 
+        function persistMissHistory() {
+          try {
+            localStorage.setItem(
+              STORAGE_KEYS.missHistory,
+              JSON.stringify(state.missedQuestionCounts)
+            );
+          } catch (error) {
+            // Ignore localStorage issues in locked-down browsers.
+          }
+        }
+
+        function getMissCount(questionId) {
+          return state.missedQuestionCounts[questionId] || 0;
+        }
+
+        function recordMiss(question) {
+          if (!question?.id) return;
+          state.missedQuestionCounts = {
+            ...state.missedQuestionCounts,
+            [question.id]: getMissCount(question.id) + 1,
+          };
+          persistMissHistory();
+        }
+
         function handleVisibilityChange() {
           if (document.visibilityState === "hidden") {
             persistAppState();
           }
         }
 
+        function getDifficultyConfig(mode = state.difficultyMode) {
+          return DIFFICULTY_MODES[mode] || DIFFICULTY_MODES[DEFAULT_DIFFICULTY_MODE];
+        }
+
         function normalizePreferences() {
+          if (!DIFFICULTY_MODES[state.difficultyMode]) {
+            state.difficultyMode = DEFAULT_DIFFICULTY_MODE;
+          }
           const maxQuestions = getAvailableQuestions().length;
           const requested = parseCountInput(state.questionCountInput);
           if (!requested && maxQuestions > 0) {
@@ -621,6 +735,16 @@
 
           if (action === "clear-all-books") {
             state.selectedBookIds = [];
+            normalizePreferences();
+            persistPreferences();
+            render();
+            return;
+          }
+
+          if (action === "set-difficulty") {
+            const nextMode = trigger.dataset.mode;
+            if (!DIFFICULTY_MODES[nextMode]) return;
+            state.difficultyMode = nextMode;
             normalizePreferences();
             persistPreferences();
             render();
@@ -723,9 +847,58 @@
           return bookCatalog.filter((book) => state.selectedBookIds.includes(book.id));
         }
 
-        function getAvailableQuestions() {
-          return questionBank.filter((question) =>
-            state.selectedBookIds.includes(question.bookId)
+        function getBookTags(bookId) {
+          return bookTagMap[bookId] || [];
+        }
+
+        function getSharedBookTagScore(firstBookId, secondBookId) {
+          const firstTags = new Set(getBookTags(firstBookId));
+          return getBookTags(secondBookId).reduce(
+            (score, tag) => score + (firstTags.has(tag) ? 1 : 0),
+            0
+          );
+        }
+
+        function getRelatedBookIds(bookId) {
+          const selectedIds = new Set(state.selectedBookIds);
+          return bookCatalog
+            .filter((book) => book.id !== bookId)
+            .sort((firstBook, secondBook) => {
+              const firstSelected = selectedIds.has(firstBook.id) ? 1 : 0;
+              const secondSelected = selectedIds.has(secondBook.id) ? 1 : 0;
+              if (secondSelected !== firstSelected) return secondSelected - firstSelected;
+
+              const firstScore = getSharedBookTagScore(bookId, firstBook.id);
+              const secondScore = getSharedBookTagScore(bookId, secondBook.id);
+              if (secondScore !== firstScore) return secondScore - firstScore;
+
+              return firstBook.title.localeCompare(secondBook.title);
+            })
+            .map((book) => book.id);
+        }
+
+        function isQuestionAllowed(question, mode = state.difficultyMode) {
+          const selectedCount = state.selectedBookIds.length;
+          const questionKind = getQuestionKind(question);
+
+          if (selectedCount === 1 && questionKind === "story-book") return false;
+
+          if (mode === "challenge" && selectedCount <= 2 && questionKind === "story-book") {
+            return false;
+          }
+
+          if (mode === "expert" && ["story-book", "author-from-title"].includes(questionKind)) {
+            return false;
+          }
+
+          return true;
+        }
+
+        function getAvailableQuestions(mode = state.difficultyMode) {
+          return questionBank.filter(
+            (question) =>
+              state.selectedBookIds.includes(question.bookId) &&
+              isQuestionAllowed(question, mode)
           );
         }
 
@@ -737,9 +910,22 @@
           return question?.questionKind || "story-book";
         }
 
+        function getCanonicalStoryDetails(bookId) {
+          return questionBank
+            .filter(
+              (question) =>
+                question.bookId === bookId &&
+                getQuestionKind(question) === "story-book"
+            )
+            .map((question) => question.explanation);
+        }
+
         function getQuestionContextText(question) {
           const book = bookMap.get(question.bookId);
           if (!book) return "";
+          if (getQuestionKind(question) === "detail-not-in-book") {
+            return `Does not belong in ${book.title}`;
+          }
           if (getQuestionAnswerType(question) === "detail") {
             return `from ${book.title} by ${book.author}`;
           }
@@ -798,47 +984,67 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
+        function getQuestionPriority(question, mode = state.difficultyMode) {
+          const preferredKinds = getDifficultyConfig(mode).preferredKinds;
+          const kindIndex = preferredKinds.indexOf(getQuestionKind(question));
+          const kindScore = kindIndex === -1 ? 0 : preferredKinds.length - kindIndex;
+          const missedScore = mode === "practice" ? 0 : Math.min(getMissCount(question.id), 3) * 4;
+          return kindScore * 10 + missedScore;
+        }
+
+        function pickBestQuestionForGroup(questions, bookUsage, mode = state.difficultyMode) {
+          if (!questions.length) return null;
+
+          let bestIndex = 0;
+          let bestScore = -Infinity;
+
+          questions.forEach((question, index) => {
+            const usagePenalty = (bookUsage.get(question.bookId) || 0) * 6;
+            const score =
+              getQuestionPriority(question, mode) -
+              usagePenalty +
+              Math.random();
+
+            if (score > bestScore) {
+              bestScore = score;
+              bestIndex = index;
+            }
+          });
+
+          return questions.splice(bestIndex, 1)[0] || null;
+        }
+
         function pickQuizQuestions(availableQuestions, requested) {
           if (requested <= 0) return [];
 
-          const preferredKinds = [
-            "detail-from-book",
-            "author-from-title",
-            "story-book",
-            "book-from-author",
-          ];
+          const preferredKinds = getDifficultyConfig().preferredKinds;
           const grouped = new Map();
-          availableQuestions.forEach((question) => {
+          shuffle(availableQuestions).forEach((question) => {
             const key = getQuestionKind(question);
             if (!grouped.has(key)) grouped.set(key, []);
             grouped.get(key).push(question);
           });
 
-          const orderedGroups = Array.from(grouped.entries())
-            .sort((a, b) => {
-              const aIndex = preferredKinds.indexOf(a[0]);
-              const bIndex = preferredKinds.indexOf(b[0]);
-              const safeA = aIndex === -1 ? preferredKinds.length : aIndex;
-              const safeB = bIndex === -1 ? preferredKinds.length : bIndex;
-              return safeA - safeB;
-            })
-            .map(([key, questions]) => ({
-              key,
-              questions: shuffle(questions),
-            }));
+          const orderedKinds = [
+            ...preferredKinds,
+            ...Array.from(grouped.keys()).filter((kind) => !preferredKinds.includes(kind)),
+          ];
 
           const picked = [];
           const usedIds = new Set();
+          const bookUsage = new Map();
 
           while (picked.length < requested) {
             let addedThisRound = false;
 
-            for (const group of orderedGroups) {
-              if (!group.questions.length || picked.length >= requested) continue;
-              const nextQuestion = group.questions.pop();
+            for (const kind of orderedKinds) {
+              const group = grouped.get(kind);
+              if (!group?.length || picked.length >= requested) continue;
+              const nextQuestion = pickBestQuestionForGroup(group, bookUsage);
               if (!nextQuestion || usedIds.has(nextQuestion.id)) continue;
               picked.push(nextQuestion);
               usedIds.add(nextQuestion.id);
+              bookUsage.set(nextQuestion.bookId, (bookUsage.get(nextQuestion.bookId) || 0) + 1);
               addedThisRound = true;
             }
 
@@ -846,66 +1052,107 @@
           }
 
           if (picked.length < requested) {
-            shuffle(availableQuestions).forEach((question) => {
-              if (picked.length >= requested || usedIds.has(question.id)) return;
-              picked.push(question);
-              usedIds.add(question.id);
-            });
+            shuffle(availableQuestions)
+              .sort(
+                (firstQuestion, secondQuestion) =>
+                  getQuestionPriority(secondQuestion) - getQuestionPriority(firstQuestion)
+              )
+              .forEach((question) => {
+                if (picked.length >= requested || usedIds.has(question.id)) return;
+                picked.push(question);
+                usedIds.add(question.id);
+              });
           }
 
-          return shuffle(picked);
+          return picked;
+        }
+
+        function uniqueChoices(items) {
+          return Array.from(new Set(items.filter(Boolean)));
+        }
+
+        function getRelatedBookChoices(question, mapBookToChoice) {
+          return uniqueChoices(
+            getRelatedBookIds(question.bookId).map((bookId) => {
+              const book = bookMap.get(bookId);
+              return book ? mapBookToChoice(book) : null;
+            })
+          );
+        }
+
+        function getAllBookChoices(mapBookToChoice) {
+          return uniqueChoices(bookCatalog.map((book) => mapBookToChoice(book)));
+        }
+
+        function getRelatedDetailChoices(question) {
+          return uniqueChoices(
+            getRelatedBookIds(question.bookId).flatMap((bookId) => getCanonicalStoryDetails(bookId))
+          );
+        }
+
+        function buildChoiceSet(answer, choicePools) {
+          const distractorSet = new Set();
+
+          choicePools.forEach((pool) => {
+            shuffle(pool).forEach((choice) => {
+              if (choice === answer || distractorSet.size >= 3) return;
+              distractorSet.add(choice);
+            });
+          });
+
+          return shuffle([answer, ...Array.from(distractorSet).slice(0, 3)]);
+        }
+
+        function buildDetailNotInBookOptions(question) {
+          const sameBookDetails = getCanonicalStoryDetails(question.bookId).filter(
+            (detail) => detail !== question.answer
+          );
+          return buildChoiceSet(question.answer, [
+            sameBookDetails,
+            getRelatedDetailChoices(question),
+          ]);
         }
 
         function buildAnswerOptions(question) {
+          if (getQuestionKind(question) === "detail-not-in-book") {
+            return buildDetailNotInBookOptions(question);
+          }
+
+          const smartDistractors = getDifficultyConfig().smartDistractors;
           const answerType = getQuestionAnswerType(question);
+          let preferredPool = [];
           let selectedPool = [];
           let allPool = [];
 
           if (answerType === "author") {
-            selectedPool = Array.from(new Set(getSelectedBooks().map((book) => book.author))).filter(
-              (choice) => choice !== question.answer
-            );
-            allPool = Array.from(new Set(bookCatalog.map((book) => book.author))).filter(
-              (choice) => choice !== question.answer
-            );
+            if (smartDistractors) {
+              preferredPool = getRelatedBookChoices(question, (book) => book.author);
+            }
+            selectedPool = uniqueChoices(getSelectedBooks().map((book) => book.author));
+            allPool = getAllBookChoices((book) => book.author);
           } else if (answerType === "detail") {
-            selectedPool = getAvailableQuestions()
-              .filter(
-                (candidate) =>
-                  getQuestionKind(candidate) === "detail-from-book" &&
-                  candidate.bookId !== question.bookId &&
-                  candidate.answer !== question.answer
-              )
-              .map((candidate) => candidate.answer);
-            allPool = questionBank
-              .filter(
-                (candidate) =>
-                  getQuestionKind(candidate) === "detail-from-book" &&
-                  candidate.bookId !== question.bookId &&
-                  candidate.answer !== question.answer
-              )
-              .map((candidate) => candidate.answer);
+            if (smartDistractors) {
+              preferredPool = getRelatedDetailChoices(question);
+            }
+            selectedPool = uniqueChoices(
+              state.selectedBookIds
+                .filter((bookId) => bookId !== question.bookId)
+                .flatMap((bookId) => getCanonicalStoryDetails(bookId))
+            );
+            allPool = uniqueChoices(
+              bookCatalog
+                .filter((book) => book.id !== question.bookId)
+                .flatMap((book) => getCanonicalStoryDetails(book.id))
+            );
           } else {
-            selectedPool = Array.from(new Set(getSelectedBooks().map((book) => book.title))).filter(
-              (choice) => choice !== question.answer
-            );
-            allPool = Array.from(new Set(bookCatalog.map((book) => book.title))).filter(
-              (choice) => choice !== question.answer
-            );
+            if (smartDistractors) {
+              preferredPool = getRelatedBookChoices(question, (book) => book.title);
+            }
+            selectedPool = uniqueChoices(getSelectedBooks().map((book) => book.title));
+            allPool = getAllBookChoices((book) => book.title);
           }
 
-          const distractorSet = new Set();
-          shuffle(selectedPool).forEach((choice) => {
-            if (distractorSet.size < 3) distractorSet.add(choice);
-          });
-
-          if (distractorSet.size < 3) {
-            shuffle(allPool).forEach((choice) => {
-              if (distractorSet.size < 3) distractorSet.add(choice);
-            });
-          }
-
-          return shuffle([question.answer, ...Array.from(distractorSet).slice(0, 3)]);
+          return buildChoiceSet(question.answer, [preferredPool, selectedPool, allPool]);
         }
 
         function submitCurrentAnswer() {
@@ -921,9 +1168,11 @@
             state.feedbackUnlockUntil = 0;
             clearFeedbackUnlockTimer();
           } else {
+            recordMiss(question);
             playWrongSound();
             state.feedbackUnlockUntil = Date.now() + WRONG_ANSWER_LOCK_MS;
             ensureFeedbackUnlockTimer();
+            maybeQueueMissReplay(question);
           }
 
           state.quizResults[state.currentQuestionIndex] = {
@@ -933,10 +1182,12 @@
             answer: question.answer,
             author: question.author,
             answerType: getQuestionAnswerType(question),
+            questionKind: getQuestionKind(question),
             explanation: question.explanation,
             sources: question.sources,
             selectedAnswer: state.selectedAnswer,
             isCorrect,
+            replayOf: question.replayOf || "",
           };
 
           state.submitted = true;
@@ -956,6 +1207,33 @@
           state.feedbackUnlockUntil = 0;
           clearFeedbackUnlockTimer();
           render();
+        }
+
+        function maybeQueueMissReplay(question) {
+          if (!getDifficultyConfig().replayMisses || question?.replayOf) return;
+
+          const usedIds = new Set(state.quizQuestions.map((candidate) => candidate.id));
+          const replayCandidates = getAvailableQuestions()
+            .filter(
+              (candidate) =>
+                candidate.bookId === question.bookId &&
+                !usedIds.has(candidate.id) &&
+                getQuestionKind(candidate) !== "story-book"
+            )
+            .sort(
+              (firstQuestion, secondQuestion) =>
+                getQuestionPriority(secondQuestion) - getQuestionPriority(firstQuestion)
+            );
+
+          const replayQuestion = replayCandidates[0];
+          if (!replayQuestion) return;
+
+          const insertionIndex = Math.min(state.currentQuestionIndex + 3, state.quizQuestions.length);
+          state.quizQuestions.splice(insertionIndex, 0, {
+            ...replayQuestion,
+            options: buildAnswerOptions(replayQuestion),
+            replayOf: question.id,
+          });
         }
 
         function getCurrentQuestion() {
@@ -1214,9 +1492,9 @@
                 </h2>
                 <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-700">
                   Practice for your Battle of the Books quiz! First choose the books
-                  you want to study, then choose how many questions you want, answer
-                  them one at a time, and see the correct answer and citation right
-                  away.
+                  you want to study, choose a difficulty mode, then choose how many
+                  questions you want, answer them one at a time, and see the correct
+                  answer and citation right away.
                 </p>
                 <div class="mt-6 rounded-[1.8rem] border border-lagoon/10 bg-lagoon/5 p-4 sm:p-5">
                   <p class="text-sm font-black uppercase tracking-[0.22em] text-lagoon">
@@ -1328,10 +1606,13 @@
                       1. Choose your books
                     </li>
                     <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
-                      2. Pick your question count
+                      2. Pick your difficulty
                     </li>
                     <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
-                      3. Answer and learn right away
+                      3. Pick your question count
+                    </li>
+                    <li class="rounded-3xl bg-white px-4 py-4 text-base font-semibold text-slate-700">
+                      4. Answer and learn right away
                     </li>
                   </ol>
                 </div>
@@ -1345,6 +1626,7 @@
           const availableQuestions = getAvailableQuestions();
           const maxQuestions = availableQuestions.length;
           const requested = parseCountInput(state.questionCountInput);
+          const difficultyConfig = getDifficultyConfig();
           const quickCounts = Array.from(
             new Set([5, 10, 15, 20].filter((count) => count <= maxQuestions))
           );
@@ -1367,8 +1649,8 @@
                       Build a quiz that fits today’s practice.
                     </h2>
                     <p class="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
-                      Start with the books you want, then choose how many questions
-                      feel just right.
+                      Start with the books you want, choose a difficulty, and then
+                      pick how many questions feel just right.
                     </p>
                   </div>
                   <div class="flex flex-wrap gap-3">
@@ -1445,6 +1727,55 @@
                               </p>
                             </div>
                           </div>
+                        </button>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+
+              <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h3 class="text-2xl font-black text-ink">
+                      Pick a difficulty mode
+                    </h3>
+                    <p class="mt-2 text-base text-slate-700">
+                      Harder modes use trickier clue types, look-alike choices, and stronger review repeats.
+                    </p>
+                  </div>
+                  <span class="inline-flex items-center rounded-full bg-coral/15 px-4 py-2 text-sm font-black text-rose-900">
+                    Mode: ${escapeHtml(difficultyConfig.label)}
+                  </span>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                  ${Object.entries(DIFFICULTY_MODES)
+                    .map(([mode, config]) => {
+                      const active = state.difficultyMode === mode;
+                      return `
+                        <button
+                          type="button"
+                          data-action="set-difficulty"
+                          data-mode="${mode}"
+                          aria-pressed="${active}"
+                          class="text-left rounded-[1.6rem] border-2 px-5 py-5 transition ${
+                            active
+                              ? "border-lagoon bg-gradient-to-br from-sky-100 to-emerald-50 shadow-sticker"
+                              : "border-slate-200 bg-white hover:-translate-y-1 hover:border-lagoon/35"
+                          }"
+                        >
+                          <div class="flex items-center justify-between gap-3">
+                            <p class="text-xl font-black text-ink">${escapeHtml(config.label)}</p>
+                            ${
+                              active
+                                ? `<span class="rounded-full bg-lagoon px-3 py-1 text-xs font-black uppercase tracking-wide text-white">On</span>`
+                                : ""
+                            }
+                          </div>
+                          <p class="mt-3 text-sm font-semibold leading-6 text-slate-700">
+                            ${escapeHtml(config.description)}
+                          </p>
                         </button>
                       `;
                     })
@@ -1582,6 +1913,7 @@
 
           const total = state.quizQuestions.length;
           const currentNumber = state.currentQuestionIndex + 1;
+          const difficultyConfig = getDifficultyConfig();
           const answeredCount = state.submitted
             ? state.currentQuestionIndex + 1
             : state.currentQuestionIndex;
@@ -1610,6 +1942,9 @@
                         </span>
                         <span class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-sky-900 sm:text-sm">
                           Answered: ${answeredCount}
+                        </span>
+                        <span class="inline-flex items-center rounded-full bg-coral/15 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-rose-900 sm:text-sm">
+                          ${escapeHtml(difficultyConfig.shortLabel)}
                         </span>
                       </div>
                       <div class="mt-3 flex items-center gap-3">
@@ -1643,15 +1978,26 @@
               </div>
 
               <div class="bubble-card rounded-[2rem] border border-white/80 p-6 shadow-floaty sm:p-8">
-                <div class="rounded-[1.8rem] bg-white px-5 py-5 sm:px-7 sm:py-7">
+                  <div class="rounded-[1.8rem] bg-white px-5 py-5 sm:px-7 sm:py-7">
                   <div class="flex items-start gap-3">
                     <div class="sticker flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sunshine to-coral text-2xl">
-                      ${getBookIcon(question.bookId)}
+                      ${state.submitted ? getBookIcon(question.bookId) : "❓"}
                     </div>
                     <div>
-                      <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
-                        Question
-                      </p>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <p class="text-sm font-black uppercase tracking-[0.24em] text-lagoon">
+                          Question
+                        </p>
+                        ${
+                          question.replayOf
+                            ? `
+                          <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">
+                            Second look
+                          </span>
+                        `
+                            : ""
+                        }
+                      </div>
                       <h2 class="mt-2 text-2xl font-black leading-tight text-ink sm:text-3xl">
                         ${escapeHtml(question.question)}
                       </h2>
@@ -1806,6 +2152,7 @@
           const total = state.quizQuestions.length;
           const percent = total ? Math.round((state.correctCount / total) * 100) : 0;
           const selectedBooks = getSelectedBooks();
+          const difficultyConfig = getDifficultyConfig();
 
           return `
             <section class="space-y-6">
@@ -1824,6 +2171,9 @@
                     </h2>
                     <p class="mt-3 text-lg leading-8 text-slate-700">
                       You got ${state.correctCount} out of ${total} correct. ${getScoreMessage(percent)}
+                    </p>
+                    <p class="mt-3 inline-flex items-center rounded-full bg-coral/15 px-4 py-2 text-sm font-black text-rose-900">
+                      Difficulty: ${escapeHtml(difficultyConfig.label)}
                     </p>
                     <div class="mt-5">
                       <p class="text-sm font-black uppercase tracking-[0.24em] text-slate-500">
@@ -1891,6 +2241,15 @@
                                 }">
                                   ${result.isCorrect ? "Correct" : "Keep practicing"}
                                 </span>
+                                ${
+                                  result.replayOf
+                                    ? `
+                                  <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">
+                                    Second look
+                                  </span>
+                                `
+                                    : ""
+                                }
                                 <span class="text-sm font-black text-slate-500">
                                   Question ${index + 1}
                                 </span>
