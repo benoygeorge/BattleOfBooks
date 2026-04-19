@@ -584,6 +584,7 @@
           if (!trigger) return;
 
           const action = trigger.dataset.action;
+          primeAudioContext();
 
           if (action === "go-home") {
             setView("home");
@@ -675,6 +676,7 @@
         }
 
         function handleChange(event) {
+          primeAudioContext();
           const answerInput = event.target.closest('input[name="answer-choice"]');
           if (answerInput && !state.submitted) {
             state.selectedAnswer = answerInput.value;
@@ -1001,14 +1003,20 @@
           const remaining = getContinuationLockRemainingMs();
           if (remaining <= 0) {
             state.feedbackUnlockUntil = 0;
+            updateContinuationCountdownUi();
             return;
           }
+          updateContinuationCountdownUi();
           feedbackUnlockTimerId = window.setInterval(() => {
-            if (getContinuationLockRemainingMs() <= 0) {
+            const currentRemaining = getContinuationLockRemainingMs();
+            if (currentRemaining <= 0) {
               state.feedbackUnlockUntil = 0;
               clearFeedbackUnlockTimer();
+              updateContinuationCountdownUi();
+              persistAppState();
+              return;
             }
-            render();
+            updateContinuationCountdownUi();
           }, 250);
         }
 
@@ -1028,6 +1036,12 @@
             .resume()
             .then(() => context)
             .catch(() => null);
+        }
+
+        function primeAudioContext() {
+          const context = getAudioContext();
+          if (!context || context.state === "running") return;
+          context.resume().catch(() => null);
         }
 
         function playTone(context, { frequency, startTime, duration, type = "sine", volume = 0.08 }) {
@@ -1084,6 +1098,32 @@
               volume: 0.08,
             });
           });
+        }
+
+        function updateContinuationCountdownUi() {
+          const button = app.querySelector('[data-role="continuation-button"]');
+          const note = app.querySelector('[data-role="continuation-note"]');
+          if (!button) return;
+
+          const remainingMs = getContinuationLockRemainingMs();
+          const countdown = Math.max(0, Math.ceil(remainingMs / 1000));
+          const baseLabel = button.dataset.baseLabel || button.textContent.trim();
+
+          if (remainingMs > 0) {
+            button.disabled = true;
+            button.textContent = `${baseLabel} (${countdown})`;
+            if (note) {
+              note.hidden = false;
+              note.textContent = `Read the explanation, then the next question unlocks in ${countdown} second${countdown === 1 ? "" : "s"}.`;
+            }
+            return;
+          }
+
+          button.disabled = false;
+          button.textContent = baseLabel;
+          if (note) {
+            note.hidden = true;
+          }
         }
 
         function render() {
@@ -1640,6 +1680,8 @@
                         ? `
                       <button
                         data-action="${currentNumber === total ? "see-results" : "next-question"}"
+                        data-role="continuation-button"
+                        data-base-label="${continuationLabel}"
                         ${continuationDisabled ? "disabled" : ""}
                         class="secondary-accent-button min-h-[58px] rounded-full px-8 py-4 text-lg font-black transition"
                       >
@@ -1650,9 +1692,13 @@
                     }
                   </div>
                   ${
-                    continuationDisabled
+                    state.submitted
                       ? `
-                    <p class="mt-3 text-sm font-semibold text-rose-700">
+                    <p
+                      data-role="continuation-note"
+                      ${continuationDisabled ? "" : "hidden"}
+                      class="mt-3 text-sm font-semibold text-rose-700"
+                    >
                       Read the explanation, then the next question unlocks in ${continuationCountdown} second${continuationCountdown === 1 ? "" : "s"}.
                     </p>
                   `
